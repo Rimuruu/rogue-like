@@ -1,9 +1,10 @@
-
+let player_img = Gfx.load_image("src/img/charSheet.png")
 (* *)
 let init_game _dt = 
   System.init_all ();
   Gfx.debug (Format.asprintf " init");
-  let player = Player.create "player" 50. 50. in
+  
+  let player = Player.create "player" 50. 50. player_img in
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
@@ -29,7 +30,8 @@ Gfx.debug (Format.asprintf " end");
  false 
  
 let load_graphics _dt = 
-  false
+  if ((Gfx.image_ready player_img)) then false
+  else true
 
 let chain_functions f_list = 
   let funs = ref f_list in

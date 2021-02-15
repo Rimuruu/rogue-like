@@ -21,4 +21,5 @@ let update _dt el =
       | Animation anim -> 
         let speed = Velocity.get e in
         Gfx.blit_scale ctx (Texture.get_frame anim (int_of_float speed.x)) (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
-    ) (el)
+      | Tile _ -> ()
+        ) (el)
