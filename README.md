@@ -11,7 +11,7 @@
 > * Lorsque le joueur meurt il recommence à la première salle.  
 > * Un ennemi peut faire tomber un objet qui soignera le joueur (taux obtention à determiné).  
 > * Il change ensuite de salle avec des ennemis plus nombreux et avec des statistiques plus élevé.  
->*Différent type d'ennemi.  
+> * Différent type d'ennemi.  
 > * Obstacle, piége dans la salle.  
 > * Un système qui sauvegarde le meilleur score du joueur (La salle, le nombre d'ennemi vaincu)  
 > * Le jeu est infinie, la partie se termine dès que le joueur est mort sinon il n'y aura pas de salle "final".  
