@@ -1,10 +1,9 @@
 
-
-let player =
-  Player.create "player" 50. 50.
-
-
-let () =
+(* *)
+let init_game _dt = 
+  System.init_all ();
+  Gfx.debug (Format.asprintf " init");
+  let player = Player.create "player" 50. 50. in
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
@@ -13,29 +12,43 @@ let () =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop player);
+  Game_state.init player;
 
-  Game_state.init player 
+  
+  false
 
-(* *)
-let init () = System.init_all ()
-
-let frames = ref 0
-let time = ref 0.0
-let update dt =
-  if !frames mod 600 == 0 then begin
-    let t = dt -. !time in
-    Gfx.debug (Format.asprintf "%f fps" (1000. *. float !frames /. t));
-    time := dt;
-    frames := 0
-  end;
-  incr frames;
+let play_game dt =
   (* Update all systems *)
+  Gfx.debug (Format.asprintf " play");
   System.update_all dt;
-  (* Repeat indefinitely *)
-  true
+  if (not(Game_state.get_status ())) then false
+  else true
 
-let update_loop () = Gfx.main_loop update
+let end_game _dt =
+Gfx.debug (Format.asprintf " end");
+ false 
+ 
+let load_graphics _dt = 
+  false
+
+let chain_functions f_list = 
+  let funs = ref f_list in
+  fun dt -> match !funs with
+            [] -> false
+            | f :: ll -> 
+              if f dt then
+                true
+              else begin
+                funs := ll;
+                true
+              end
+
+              
+let t () = 
+  let m = chain_functions [load_graphics;init_game;play_game;end_game]in
+  Gfx.main_loop m
+
+
 
 let () =
-  init ();
-  update_loop ()
+  t ()

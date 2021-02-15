@@ -25,18 +25,18 @@ let reset e x y =
 
 let move_up e =
 
-    Velocity.set e { x = 0.0; y = -100.0 }
+    Velocity.set e { x = 0.0; y = -200.0 }
   
 let move_down e =
 
-    Velocity.set e { x = 0.0; y = 100.0 }
+    Velocity.set e { x = 0.0; y = 200.0 }
 
 let move_right e =
 
-    Velocity.set e { x = 100.0; y = 0.0 }
+    Velocity.set e { x = 200.0; y = 0.0 }
   
 let move_left e =
-    Velocity.set e { x = -100.0; y = 0.0 }
+    Velocity.set e { x = -200.0; y = 0.0 }
 
 let stop e =
   Velocity.set e Vector.zero
