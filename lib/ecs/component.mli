@@ -9,4 +9,4 @@ end
 
 (* Raised by get if the given entity does not have
    the associated component *)
-exception MissingComponent of (Entity.t*string)
+exception MissingComponent of (Entity.t * string)

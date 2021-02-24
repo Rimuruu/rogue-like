@@ -1,3 +1,4 @@
+open Ecs
 module type S =
 sig
   val init : unit -> unit

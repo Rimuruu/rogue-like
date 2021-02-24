@@ -1,4 +1,4 @@
-exception MissingComponent of (Entity.t*string)
+exception MissingComponent of (Entity.t * string)
 
 module Make (T : sig type t val name : string end) =
 struct

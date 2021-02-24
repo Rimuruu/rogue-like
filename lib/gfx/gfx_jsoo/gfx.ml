@@ -1,4 +1,5 @@
 open Js_of_ocaml
+include Gfx_base
 
 
 type window = Dom_html.canvasElement Js.t
@@ -7,16 +8,19 @@ type color = string
 
 let events = Queue.create ()
 let create s =
+  (*let id, w, h, _ = parse_window_spec s in *)
   match Dom_html.getElementById_coerce s Dom_html.CoerceTo.canvas with
-     None -> raise (Gfx_base.GfxError ("Gfx_js: cannot find canvas with id " ^ s))
+     None ->  gfx_error "Cannot find canvas with id `%s`" s
    | Some canvas ->
+      (*canvas ##.width :=  w;
+      canvas ##.height := h;*)
       let ctx = canvas ##getContext Dom_html._2d_ in
       canvas ##. onkeydown := Dom_html.handler (fun e ->
-        Js.Optdef.iter e ##.key (fun k -> 
+        Js.Optdef.iter e ##.key (fun k ->
           Queue.add (Gfx_base.KeyDown (Js.to_string k)) events);
         Js._true);
       canvas ##. onkeyup := Dom_html.handler (fun e ->
-        Js.Optdef.iter e ##.key (fun k -> 
+        Js.Optdef.iter e ##.key (fun k ->
           Queue.add (Gfx_base.KeyUp (Js.to_string k)) events);
         Js._true);
       (canvas, ctx)
@@ -29,10 +33,10 @@ let create_offscreen w h =
 
 let render_width (ctx : render) =
   ctx ##. canvas ##. width
-    
+
 let render_height (ctx : render) =
   ctx ##. canvas ##. width
-    
+
 
 let blit (dst : render) (src : render) x y =
   dst ## drawImage_fromCanvas (src ##. canvas) (float x) (float y)
@@ -45,8 +49,8 @@ let blit_full (dst : render) (src : render) sx sy sw sh dx dy dw dh =
     dst ## drawImage_fullFromCanvas (src ##. canvas)
     (float sx) (float sy) (float sw) (float sh)
     (float dx) (float dy) (float dw) (float dh)
-  
-let color r g b a = 
+
+let color r g b a =
   "rgba(" ^ string_of_int r ^ ", " ^
             string_of_int g ^ ", " ^
             string_of_int b ^ ", " ^
@@ -58,7 +62,7 @@ let color r g b a =
             1. -> 1.0
             0.2423 -> 0.24230
 *)
-let clear_rect (ctx : render) x y w h = 
+let clear_rect (ctx : render) x y w h =
   ctx ## clearRect (float x) (float y) (float w) (float h)
 
 let fill_rect (ctx : render) x y w h c =
@@ -78,12 +82,12 @@ let image_ready img =
 
 let draw_image (ctx : render) img x y =
   ctx ## drawImage img (float x) (float y)
-  
+
 let draw_image_scale (ctx : render) img dx dy dw dh =
   ctx ## drawImage_withSize img  (float dx) (float dy) (float dw) (float dh)
-  
+
 let draw_image_full (ctx : render) img sx sy sw sh dx dy dw dh =
-  ctx ## drawImage_full img 
+  ctx ## drawImage_full img
   (float sx) (float sy) (float sw) (float sh)
   (float dx) (float dy) (float dw) (float dh)
 
@@ -110,6 +114,8 @@ let main_loop f =
   in
   cb := Js.wrap_callback loop;
   ignore(Dom_html.window ## requestAnimationFrame !cb)
+
+let commit _ = ()
 
 let debug msg =
   Firebug.console ## log (Js.string msg)

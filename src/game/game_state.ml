@@ -1,5 +1,5 @@
 
-
+open Ecs
 type t = {
   player : Entity.t;
   ennemies : Entity.t list;

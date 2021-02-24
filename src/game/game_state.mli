@@ -1,3 +1,4 @@
+open Ecs
 
 val init : Entity.t -> unit
 val get_player : unit -> Entity.t

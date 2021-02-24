@@ -1,15 +1,15 @@
 open Component_defs
 open System_defs
-
+open Ecs
 
 
 let create name x y img=
   let e = Entity.create () in
-  let anim = Texture.create_animation img 3 4 160 160 80 80 in
+  let anim = Texture.create_animation img 3 4 160 160 40 40 in
   Position.set e { x = x; y = y};
   Velocity.set e Vector.zero;
   Mass.set e infinity;
-  Box.set e {width = 80; height=80 };
+  Box.set e {width = 40; height=40 };
   Name.set e name;
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,3) anim;
