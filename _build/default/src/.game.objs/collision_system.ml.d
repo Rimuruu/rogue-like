@@ -1,1 +1,1 @@
-src/system/collision_system.ml: Box CollisionResolver Component_defs Float List Mass Position Rect Vector Velocity
+src/system/collision_system.ml: Box CollisionResolver Component_defs List Position Rect Vector Velocity

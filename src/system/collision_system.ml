@@ -26,7 +26,7 @@ let update _dt el =
           not (Vector.is_zero v1 && Vector.is_zero v2)
           then begin
             (* [3] le plus petit des vecteurs a b c d *)
-            let a = Vector.{ x = s_pos.x; y = 0.0} in
+            (*let a = Vector.{ x = s_pos.x; y = 0.0} in
             let b = Vector.{ x = float s_rect.width +. s_pos.x; y = 0.0 } in
             let c = Vector.{ x = 0.0; y = s_pos.y } in
             let d = Vector.{ x = 0.0; y = float s_rect.height +. s_pos.y} in 
@@ -75,7 +75,7 @@ let update _dt el =
             let new_v2 = Vector.sub v2 (Vector.mult (j/. m2) n) in
             (* [9] mise à jour des vitesses *)
             Velocity.set e1 new_v1;
-            Velocity.set e2 new_v2;
+            Velocity.set e2 new_v2;*)
             (* [10] appel des resolveurs *)
             if CollisionResolver.has_component e1 then (CollisionResolver.get e1) e1 e2;
             if CollisionResolver.has_component e2 then (CollisionResolver.get e2) e2 e1

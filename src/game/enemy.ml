@@ -7,7 +7,7 @@ let create name posX posY velX velY img= (*On choisit la direction qu'il prend q
   let anim = Texture.create_animation img 3 4 160 160 40 40 in
   Position.set e { x = posX; y = posY};
   Velocity.set e { x = velX; y = velY};
-  Mass.set e 10.0;
+  Mass.set e infinity;
   Box.set e {width = 40; height=40 };
   Name.set e name;
   Surface.set e anim;

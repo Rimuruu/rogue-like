@@ -84,7 +84,7 @@ let path m =
   let generate_map d p n player_img=
   let map = List.init n (fun e -> 
     let entity = Map.create "map" 0. 80. p d 40 in
-    let e1 = Enemy.create "ball_1" 200. 240. 0. 100. player_img in
+    let e1 = Enemy.create "ennemy" 200. 240. 0. 100. player_img in
     let ennemies = [e1] in
     {id=entity;ennemies=ennemies;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
     )in
