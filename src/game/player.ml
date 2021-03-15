@@ -17,7 +17,7 @@ let create name x y img=
   Texture.create_idle "back_walk" (6,9) anim;
   Texture.create_idle "left_walk" (9,12) anim;
   Texture.play_idle anim "front_walk";
-
+  Priority.set e 2;
   (* systems *)
   Collision_S.register e;
   Control_S.register e;

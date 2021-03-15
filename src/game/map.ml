@@ -1,5 +1,4 @@
 open Component_defs
-open System_defs
 open Ecs
 
 
@@ -10,9 +9,9 @@ let e = Entity.create () in
   Mass.set e infinity;
   Name.set e name;
   Surface.set e (Texture.create_tilemap palette map size);
-
+  Priority.set e 0;
   (* systems *)
-  Draw_S.register e;
+
 
   e
 

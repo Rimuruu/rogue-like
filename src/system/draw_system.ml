@@ -11,6 +11,12 @@ let init () =
 let update _dt el =
   let ctx = Option.get !ctx in
   Gfx.clear_rect ctx 0 0 800 640;
+  let list_sort = List.sort (
+      fun a b ->
+        let aP = Priority.get a in
+        let bP = Priority.get b in 
+        aP - bP
+        ) el in
   List.iter (fun e -> 
     let pos = Position.get e in
     let box = try Box.get e with _ -> {width = 0; height = 0} in
@@ -22,4 +28,4 @@ let update _dt el =
         let speed = Velocity.get e in
         Gfx.blit_scale ctx (Texture.get_frame anim (int_of_float speed.x)) (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
       | Tile tilemap -> Texture.draw_tilemap tilemap ctx (int_of_float pos.x) (int_of_float pos.y)
-        ) (el)
+        ) (list_sort)

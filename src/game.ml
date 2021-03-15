@@ -8,6 +8,7 @@ let init_game _dt =
   Gfx.debug (Format.asprintf " init");
   
   let player = Player.create "player" 80. 240. player_img in
+ 
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
@@ -16,8 +17,9 @@ let init_game _dt =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop player);
-  let _ = Map.create "map" 0. 80. Global.palette Global.map 40 in
-  Game_state.init player;
+  let map = Game_state.generate_map Global.map Global.palette 5 player_img in
+  
+  Game_state.init player map;
   false
 
 let play_game dt =
