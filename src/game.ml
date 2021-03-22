@@ -5,6 +5,7 @@ let frameEnd = ref 0.0
 let fps = 60.0
 let frameDelay = 1. /. fps
 let player_img = Gfx.load_image("src/img/charSheet.png")
+let heart_img = Gfx.load_image("src/img/heart.png")
 (* *)
 let init_game _dt = 
   System.init_all ();
@@ -16,13 +17,17 @@ let init_game _dt =
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
   Input_handler.register_command (KeyDown "d") (fun () -> Player.move_right player);
-  Input_handler.register_command (KeyUp "z") (fun () -> Player.stop player);
-  Input_handler.register_command (KeyUp "s") (fun () -> Player.stop player);
-  Input_handler.register_command (KeyUp "q") (fun () -> Player.stop player);
-  Input_handler.register_command (KeyUp "d") (fun () -> Player.stop player);
+  Input_handler.register_command (KeyUp "z") (fun () -> Player.stop "up" player);
+  Input_handler.register_command (KeyUp "s") (fun () -> Player.stop "down" player);
+  Input_handler.register_command (KeyUp "q") (fun () -> Player.stop "left" player);
+  Input_handler.register_command (KeyUp "d") (fun () -> Player.stop "right" player);
+  Input_handler.set_key "up" false;
+  Input_handler.set_key "down" false;
+  Input_handler.set_key "left" false;
+  Input_handler.set_key "right" false;
   let map = Game_state.generate_map Global.map Global.palette 5 player_img in
   
-  Game_state.init player map;
+  Game_state.init player map heart_img;
   false
 
 let play_game dt =
@@ -40,7 +45,7 @@ Gfx.debug (Format.asprintf " end");
  false 
  
 let load_graphics _dt = 
-  if ((Gfx.image_ready player_img)) then false
+  if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)) then false
   else true
 
 let chain_functions f_list = 

@@ -18,37 +18,62 @@ let create name x y img=
   Texture.create_idle "left_walk" (9,12) anim;
   Texture.play_idle anim "front_walk";
   Priority.set e 2;
+  InvunerableFrame.set e 0;
   (* systems *)
   Collision_S.register e;
   Control_S.register e;
   Draw_S.register e;
   Move_S.register e;
+  Logic_S.register e;
   e
 
 let reset e x y = 
 
   Position.set e { x = x; y = y }
 
+
+
 let move_up e =
-  let anim = Surface.get e in
+  let isPushed = Input_handler.get_key "up" in
+  if not(isPushed) then begin
+    let anim = Surface.get e in
+    Gfx.debug (Format.asprintf "pressed");
+    Input_handler.set_key "up" true;
     Texture.play_idle anim "back_walk";
     Velocity.set e { x = 0.0; y = -200.0 }
+  end
   
 let move_down e =
-  let anim = Surface.get e in
+  let isPushed = Input_handler.get_key "down" in
+  if not(isPushed) then begin
+    let anim = Surface.get e in
+    Gfx.debug (Format.asprintf "pressed");
+    Input_handler.set_key "down" true;
   Texture.play_idle anim "front_walk";
     Velocity.set e { x = 0.0; y = 200.0 }
+  end
 
 let move_right e =
-  let anim = Surface.get e in
+  let isPushed = Input_handler.get_key "right" in
+  if not(isPushed) then begin
+    let anim = Surface.get e in
+    Gfx.debug (Format.asprintf "pressed");
+    Input_handler.set_key "right" true;
   Texture.play_idle anim "right_walk";
     Velocity.set e { x = 200.0; y = 0.0 }
+  end
   
 let move_left e =
-  let anim = Surface.get e in
+  let isPushed = Input_handler.get_key "left" in
+  if not(isPushed) then begin
+    let anim = Surface.get e in
+    Gfx.debug (Format.asprintf "pressed");
+    Input_handler.set_key "left" true;
   Texture.play_idle anim "left_walk";
     Velocity.set e { x = -200.0; y = 0.0 }
+  end
 
-let stop e =
+let stop key e =
+  Input_handler.set_key key false;
   Velocity.set e Vector.zero
   

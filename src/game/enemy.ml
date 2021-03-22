@@ -20,7 +20,6 @@ let create name posX posY velX velY img= (*On choisit la direction qu'il prend q
   e
 
 let reset e x y = 
-
   Position.set e { x = x; y = y }
 
 let stop e =

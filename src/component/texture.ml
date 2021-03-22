@@ -26,13 +26,12 @@ type t = Color of Gfx.color
 let black = Color (Gfx.color 0 0 0 255)
 let red = Color (Gfx.color 255 0 0 255)
 let blue = Color (Gfx.color 0 0 255 255)
-
-let gray = Color (Gfx.color 128 128 128 255)
+let gray = Color (Gfx.color 64 70 72 255)
 
 let create_img img l h = 
         let r = Gfx.create_offscreen l h in
         Gfx.draw_image_scale r img 0 0 l h;
-        r
+        Image r
 
 let create_tilemap colors tilemap size= Tile {tiles = colors; map = tilemap;grid_size = size}
 

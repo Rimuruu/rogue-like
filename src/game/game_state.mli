@@ -10,7 +10,7 @@ type room = {
 }
 
 
-val init : Entity.t -> room array -> unit
+val init : Entity.t -> room array -> Gfx.image -> unit
 val get_player : unit -> Entity.t
 val get_status : unit -> bool
 
