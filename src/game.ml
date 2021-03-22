@@ -1,6 +1,9 @@
 
 
-
+let frameStart = ref 0.0
+let frameEnd = ref 0.0
+let fps = 60.0
+let frameDelay = 1. /. fps
 let player_img = Gfx.load_image("src/img/charSheet.png")
 (* *)
 let init_game _dt = 
@@ -24,8 +27,11 @@ let init_game _dt =
 
 let play_game dt =
   (* Update all systems *)
+  frameStart := Sys.time ();
   Gfx.debug (Format.asprintf " play");
   System.update_all dt;
+  frameEnd := (Sys.time ()) -. !frameStart;
+  while !frameEnd < frameDelay do frameEnd := (Sys.time ()) -. !frameStart; done;
   if (not(Game_state.get_status ())) then false
   else true
 

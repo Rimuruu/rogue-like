@@ -5,10 +5,11 @@ let init () =
   let _, c = Gfx.create "canvas"  in
   ctx := Some c
 
-
+let cpt = ref 0.0
+let time = ref 0.0
   
 
-let update _dt el =
+let update dt el =
   let ctx = Option.get !ctx in
   Gfx.clear_rect ctx 0 0 800 640;
   let list_sort = List.sort (
@@ -26,6 +27,7 @@ let update _dt el =
       | Image image -> Gfx.blit_scale ctx image (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
       | Animation anim -> 
         let speed = Velocity.get e in
-        Gfx.blit_scale ctx (Texture.get_frame anim (int_of_float speed.x)) (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
+        Gfx.blit_scale ctx (Texture.get_frame anim (int_of_float speed.x) dt time cpt) (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
       | Tile tilemap -> Texture.draw_tilemap tilemap ctx (int_of_float pos.x) (int_of_float pos.y)
         ) (list_sort)
+

@@ -2,6 +2,8 @@ exception MissingIdle of string
 
 type tupleInt = (int *int)
 
+let time = ref 0.0
+let cpt = ref 0.0
 
 type animation = {
         frames : Gfx.render array;
@@ -78,10 +80,16 @@ let play_idle anim idleName =
 
 
 
-let get_frame anim _dir = 
+let get_frame anim _dir _dt _time _cpt= 
         let currentCase = Array.get (anim.frames) (anim.current) in
-        let _deb = (fst anim.currentIdle) in
-        let _fin = (snd anim.currentIdle) in
+        let deb = (fst anim.currentIdle) in
+        let fin = (snd anim.currentIdle) in
         let _current = anim.current in
-        (*if current == fin-1 then anim.current <- deb else anim.current <- anim.current + 1;*)
+        let time = Sys.time () in
+        anim.current <- (((int_of_float (time*.10.)))mod(fin-deb)) + deb;
+        (*Gfx.debug (Format.asprintf "anime %d" anim.current);*)
+        (*if !cpt > 5.0 then begin
+                if current == fin-1 then anim.current <- deb 
+                else begin anim.current <- anim.current + 1 end;
+        end;*)
         currentCase
