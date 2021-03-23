@@ -39,7 +39,6 @@ let create_animation img num_w num_h sw sh dw dh =
         let array_frame = Array.init (num_w * num_h) (fun _i -> Gfx.create_offscreen dw dh) in
         for y = 0 to (num_h-1) do
                 for x = 0 to (num_w-1) do
-                        Gfx.debug (Format.asprintf "%i x*sw %i y*sh" (x*sw) (y*sh));
                         Gfx.draw_image_full array_frame.(y*num_w+x) img (x*sw) (y*sh) sw sh 0 0 dw dh;
                 done
         done;

@@ -3,6 +3,7 @@ type t
 val create : unit -> t
 
 val pp : Format.formatter -> t -> unit
+val pp2 :  t -> string
 
 val hash : t -> int
 

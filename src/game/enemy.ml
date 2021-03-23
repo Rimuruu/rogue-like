@@ -11,8 +11,11 @@ let create name posX posY velX velY img= (*On choisit la direction qu'il prend q
   Box.set e {width = 40; height=40 };
   Name.set e name;
   Surface.set e anim;
-  Texture.create_idle "move" (0,3) anim;
-  Texture.play_idle anim "move";
+  Texture.create_idle "front_walk" (0,3) anim;
+  Texture.create_idle "right_walk" (3,6) anim;
+  Texture.create_idle "back_walk" (6,9) anim;
+  Texture.create_idle "left_walk" (9,12) anim;
+  Texture.play_idle anim "front_walk";
   Priority.set e 2;
 
   (* systems *)

@@ -16,7 +16,11 @@ let create name x y img=
   Texture.create_idle "right_walk" (3,6) anim;
   Texture.create_idle "back_walk" (6,9) anim;
   Texture.create_idle "left_walk" (9,12) anim;
-  Texture.play_idle anim "front_walk";
+  Texture.create_idle "front" (0,1) anim;
+  Texture.create_idle "right" (3,4) anim;
+  Texture.create_idle "back" (6,7) anim;
+  Texture.create_idle "left" (9,10) anim;
+  Texture.play_idle anim "front";
   Priority.set e 2;
   InvunerableFrame.set e 0;
   (* systems *)
@@ -37,7 +41,6 @@ let move_up e =
   let isPushed = Input_handler.get_key "up" in
   if not(isPushed) then begin
     let anim = Surface.get e in
-    Gfx.debug (Format.asprintf "pressed");
     Input_handler.set_key "up" true;
     Texture.play_idle anim "back_walk";
     Velocity.set e { x = 0.0; y = -200.0 }
@@ -47,7 +50,6 @@ let move_down e =
   let isPushed = Input_handler.get_key "down" in
   if not(isPushed) then begin
     let anim = Surface.get e in
-    Gfx.debug (Format.asprintf "pressed");
     Input_handler.set_key "down" true;
   Texture.play_idle anim "front_walk";
     Velocity.set e { x = 0.0; y = 200.0 }
@@ -57,7 +59,6 @@ let move_right e =
   let isPushed = Input_handler.get_key "right" in
   if not(isPushed) then begin
     let anim = Surface.get e in
-    Gfx.debug (Format.asprintf "pressed");
     Input_handler.set_key "right" true;
   Texture.play_idle anim "right_walk";
     Velocity.set e { x = 200.0; y = 0.0 }
@@ -67,13 +68,17 @@ let move_left e =
   let isPushed = Input_handler.get_key "left" in
   if not(isPushed) then begin
     let anim = Surface.get e in
-    Gfx.debug (Format.asprintf "pressed");
     Input_handler.set_key "left" true;
   Texture.play_idle anim "left_walk";
     Velocity.set e { x = -200.0; y = 0.0 }
   end
 
 let stop key e =
+  let anim = Surface.get e in
   Input_handler.set_key key false;
+  if (String.compare key "down")==0 then begin Texture.play_idle anim "front"; end;
+  if (String.compare key "up")==0 then begin Texture.play_idle anim "back"; end;
+  if (String.compare key "right")==0 then begin Texture.play_idle anim "right"; end;
+  if (String.compare key "left")==0 then begin Texture.play_idle anim "left"; end;
   Velocity.set e Vector.zero
   

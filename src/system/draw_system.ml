@@ -10,6 +10,7 @@ let time = ref 0.0
   
 
 let update dt el =
+
   let ctx = Option.get !ctx in
   Gfx.clear_rect ctx 0 0 800 640;
   let list_sort = List.sort (

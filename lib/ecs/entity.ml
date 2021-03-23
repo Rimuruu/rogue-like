@@ -8,6 +8,7 @@ module E = struct
       !c
 
   let pp ppf e = Format.fprintf ppf "<e:%d>" e
+  let pp2 e = Format.asprintf "<e:%d>" e
 
   let hash i = i
 

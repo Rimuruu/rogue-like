@@ -95,22 +95,10 @@ let path m =
     |[x] -> 
       Array.set room.doors door  (true,x.index);
       Array.set x.doors (door_f door) (true,room.index);
-      for i = 0 to (Array.length room.doors)-1 do
-        let b,ind = Array.get room.doors i in
-        Gfx.debug (Format.asprintf "index %d door  %d %b"room.index  ind b);
-       done;
-      for i = 0 to (Array.length x.doors)-1 do
-        let b,ind = Array.get x.doors i in
-        Gfx.debug (Format.asprintf "index %d door  %d %b"x.index  ind b);
-       done;
       room::[x]
     | x::tail -> 
         Array.set room.doors door  (true,x.index);
         Array.set x.doors (door_f door) (true,room.index);
-        for i = 0 to (Array.length room.doors)-1 do
-          let b,ind = Array.get room.doors i in
-          Gfx.debug (Format.asprintf "index %d door %d %b" room.index ind b);
-         done;
         room::(path_aux tail x) 
 
   in
@@ -182,7 +170,6 @@ let enable_door e =
         let r = snd (get_door name) in
         let room = (Array.get !state.map r)in
         let old_room = !state.currentRoom in
-        Gfx.debug (Format.asprintf "play %d %d" r (Array.length !state.map));
         state := { !state with currentRoom = room;};
         List.iter (fun e -> unload_ennemie e) old_room.ennemies;
         List.iter (fun e -> load_ennemie e) room.ennemies;
@@ -202,9 +189,10 @@ let enable_door e =
     let init pe1 map heart_img=
       let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
       Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      state := { !state with player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit};
+      state := {  isPlaying = true;player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
+      player_state := {health =3};
       interface := {!interface with vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
       update_health ();
       
