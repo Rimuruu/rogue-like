@@ -25,7 +25,9 @@ type t = Color of Gfx.color
 
 let black = Color (Gfx.color 0 0 0 255)
 let red = Color (Gfx.color 255 0 0 255)
+let green = Color (Gfx.color 0 255 0 255)
 let blue = Color (Gfx.color 0 0 255 255)
+let yellow = Color (Gfx.color 255 255 0 255)
 let gray = Color (Gfx.color 64 70 72 255)
 
 let create_img img l h = 

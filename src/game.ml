@@ -29,6 +29,18 @@ let init_game _dt =
   Input_handler.set_key "left" false;
   Input_handler.set_key "right" false;
   let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img in
+  (*Murs du haut*)
+  Game_state.enable_wall (Wall.create 40. 120. 360 40);
+  Game_state.enable_wall (Wall.create 440. 120. 320 40);
+  (*Murs du bas*)
+  Game_state.enable_wall (Wall.create 40. 560. 360 40);
+  Game_state.enable_wall (Wall.create 440. 560. 320 40);
+  (*Murs de gauche*)
+  Game_state.enable_wall (Wall.create 40. 160. 40 160);
+  Game_state.enable_wall (Wall.create 40. 360. 40 200);
+  (*Murs de droite*)
+  Game_state.enable_wall (Wall.create 720. 160. 40 160);
+  Game_state.enable_wall (Wall.create 720. 360. 40 200);
   
   Game_state.init player map heart_img;
   false

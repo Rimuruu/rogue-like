@@ -5,15 +5,13 @@ open Ecs
 
 
 
-let create name x y xt yt=
+let create x y w h=
 let e = Entity.create () in
   Position.set e { x = x; y = y};
-  Teleport.set e { x = xt; y = yt};
-  Box.set e { width = 40; height = 40};
+  Box.set e { width = w; height = h};
   Velocity.set e Vector.zero;
-  Mass.set e 0.0;
-  Name.set e name;
-  Surface.set e Texture.yellow;
+  Mass.set e infinity;
+  Surface.set e Texture.blue;
   Priority.set e 1;
   
   (* systems *)

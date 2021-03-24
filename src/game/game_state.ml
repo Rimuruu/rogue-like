@@ -8,7 +8,6 @@ type room = {
   ennemies : Entity.t list;
   value : int array array;
   doors : (bool*int) array;
-
 }
 
 type t = {
@@ -17,6 +16,7 @@ type t = {
   currentRoom : room;
   map : room array;
   doors_entity : Entity.t array;
+  walls_entity : Entity.t array;
 }
 
 type t_interface = {
@@ -48,6 +48,7 @@ let state = ref {
   currentRoom = {id=Entity.dummy;ennemies=[];index=(-1);value=[||];doors=[||]};
   map = [||];
   doors_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
+  walls_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
 }
 
 
@@ -136,60 +137,77 @@ let enable_door e =
   Collision_S.register e;
   ()
 
-
+let enable_wall e =
+  Draw_S.register e;
+  Collision_S.register e;
+  ()
+      
+let disable_wall e =
+  Draw_S.unregister e;
+  Collision_S.unregister e;
+  ()
 
     let change_door () =
-      let d = !state.currentRoom.doors in
-      let d_e = !state.doors_entity in
-      for i = 0 to 3 do
-        if (fst (Array.get d i)) then enable_door (Array.get d_e i)
-        else disable_door (Array.get d_e i)
-      done
-
-      let get_door name = 
-      if (String.compare name "left")==0 then (Array.get !state.currentRoom.doors 0)
-      else if (String.compare name "top")==0 then (Array.get !state.currentRoom.doors 1)
-      else if (String.compare name "right")==0 then(Array.get !state.currentRoom.doors 2)
-      else if (String.compare name "bottom")==0 then(Array.get !state.currentRoom.doors 3)
-      else (false,1)
-
-      let load_ennemie e =
-        Collision_S.register e;
-        Control_S.register e;
-        Draw_S.register e;
-        Move_S.register e
-
-      let unload_ennemie e =
-        Collision_S.unregister e;
-        Control_S.unregister e;
-        Draw_S.unregister e;
-        Move_S.unregister e
-        
-      let change_room e =
-        let name = Name.get e in
-        let r = snd (get_door name) in
-        let room = (Array.get !state.map r)in
-        let old_room = !state.currentRoom in
-        state := { !state with currentRoom = room;};
-        List.iter (fun e -> unload_ennemie e) old_room.ennemies;
-        List.iter (fun e -> load_ennemie e) room.ennemies;
-        change_door ()        
-    
-  let collision door e = 
-    let name = Name.get e in
-    if (String.compare name "player") == 0 then begin
-      change_room door;
-      Position.set e (Teleport.get door);
-      (*Velocity.set e Vector.zero;*)
+  let d = !state.currentRoom.doors in
+  let d_e = !state.doors_entity in
+  let w_e = !state.walls_entity in
+  for i = 0 to 3 do
+  if (fst (Array.get d i)) then begin
+    enable_door (Array.get d_e i);
+    disable_wall (Array.get w_e i);
     end
+  else begin 
+    disable_door (Array.get d_e i);
+    enable_wall (Array.get w_e i);
+    end
+  done
+
+let get_door name = 
+if (String.compare name "left")==0 then (Array.get !state.currentRoom.doors 0)
+else if (String.compare name "top")==0 then (Array.get !state.currentRoom.doors 1)
+else if (String.compare name "right")==0 then(Array.get !state.currentRoom.doors 2)
+else if (String.compare name "bottom")==0 then(Array.get !state.currentRoom.doors 3)
+else (false,1)
+
+let load_ennemie e =
+  Collision_S.register e;
+  Control_S.register e;
+  Draw_S.register e;
+  Move_S.register e
+
+let unload_ennemie e =
+  Collision_S.unregister e;
+  Control_S.unregister e;
+  Draw_S.unregister e;
+  Move_S.unregister e
+        
+let change_room e =
+  let name = Name.get e in
+  let r = snd (get_door name) in
+  let room = (Array.get !state.map r)in
+  let old_room = !state.currentRoom in
+  state := { !state with currentRoom = room;};
+  List.iter (fun e -> unload_ennemie e) old_room.ennemies;
+  List.iter (fun e -> load_ennemie e) room.ennemies;
+  change_door ()        
+
+let collision door e = 
+  let name = Name.get e in
+  if (String.compare name "player") == 0 (*&& (door.isActive)*) then begin
+    change_room door;
+    Position.set e (Teleport.get door);
+    (*Velocity.set e Vector.zero;*)
+  end
   
 
 
 
     let init pe1 map heart_img=
       let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
+      let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
       Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      state := {  isPlaying = true;player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit};
+      Array.iter (fun e -> CollisionResolver.set e collision) wallsInit;
+      state := { !state with player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit;walls_entity = wallsInit};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
       player_state := {health =3};

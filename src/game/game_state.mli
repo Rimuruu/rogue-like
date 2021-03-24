@@ -16,7 +16,7 @@ val get_status : unit -> bool
 
 
 
-
+val enable_wall : Entity.t -> unit
 
 val door_f  : int -> int
 
