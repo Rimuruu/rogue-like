@@ -206,7 +206,6 @@ let collision door e =
       let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
       let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
       Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      Array.iter (fun e -> CollisionResolver.set e collision) wallsInit;
       state := { !state with player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit;walls_entity = wallsInit};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;

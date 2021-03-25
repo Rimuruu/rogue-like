@@ -15,7 +15,7 @@ let e = Entity.create () in
   Name.set e name;
   Surface.set e Texture.yellow;
   Priority.set e 1;
-  
+
   (* systems *)
   Draw_S.register e;
   Collision_S.register e;
