@@ -11,7 +11,7 @@ let e = Entity.create () in
   Teleport.set e { x = xt; y = yt};
   Box.set e { width = 40; height = 40};
   Velocity.set e Vector.zero;
-  Mass.set e 0.0;
+  Mass.set e infinity;
   Name.set e name;
   Surface.set e Texture.yellow;
   Priority.set e 1;

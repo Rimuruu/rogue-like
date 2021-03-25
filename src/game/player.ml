@@ -76,9 +76,16 @@ let move_left e =
 let stop key e =
   let anim = Surface.get e in
   Input_handler.set_key key false;
+  let nextKey,value = Input_handler.get_active_key ()in
+  Gfx.debug (Format.asprintf "nextKey %s value %b"nextKey value);
   if (String.compare key "down")==0 then begin Texture.play_idle anim "front"; end;
   if (String.compare key "up")==0 then begin Texture.play_idle anim "back"; end;
   if (String.compare key "right")==0 then begin Texture.play_idle anim "right"; end;
   if (String.compare key "left")==0 then begin Texture.play_idle anim "left"; end;
-  Velocity.set e Vector.zero
+  Velocity.set e Vector.zero;
+  if ((String.compare nextKey "down")==0)&&value then begin Texture.play_idle anim "front_walk";Velocity.set e { x = 0.0; y = 200.0 }; end;
+  if ((String.compare nextKey "up")==0)&&value then begin Texture.play_idle anim "back_walk";Velocity.set e { x = 0.0; y = -200.0 }; end;
+  if ((String.compare nextKey "right")==0)&&value then begin Texture.play_idle anim "right_walk";Velocity.set e { x = 200.0; y = 0.0 }; end;
+  if ((String.compare nextKey "left")==0)&&value then begin Texture.play_idle anim "left_walk"; Velocity.set e { x = -200.0; y = 0.0 }; end
+  
   

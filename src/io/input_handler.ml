@@ -11,6 +11,7 @@ let get_key key = try
 let set_key key b = 
     Hashtbl.replace keysDown key b
 
+let get_active_key () = Hashtbl.fold (fun key value acc -> if value then (key,value)else acc) keysDown ("",false)
 
 let register_command ev f =
   if ev != Gfx.NoEvent then
