@@ -15,7 +15,7 @@ S .
 S ../src
 S ../src/component
 S ../src/game
-S ../src/game/ennemies
+S ../src/game/enemies
 S ../src/game/interface
 S ../src/io
 S ../src/system

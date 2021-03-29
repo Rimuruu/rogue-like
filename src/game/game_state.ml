@@ -116,13 +116,35 @@ let path m =
         end;
       end
 
+(*
+let rec creation_ennemiesA dangerosite ennemies player_img =
+  if dangerosite > 0 then begin
+    let menace = Random.int dangerosite in
+    match menace with
+    |1 -> creation_ennemiesA (dangerosite-1) ((Ball.create 300. 400. player_img)::ennemies) player_img
+    |2 -> if Random.bool () then creation_ennemiesA (dangerosite-2) ((Gobelin.create 300. 400. player_img)::ennemies) player_img
+                           else creation_ennemiesA (dangerosite-2) ((Trappeur.create 300. 400. 0. 100. player_img)::ennemies) player_img
+    |_ -> creation_ennemiesA dangerosite ennemies player_img
+    end
+  else
+    ennemies
 
+let creation_ennemies niveau ennemies player_img =
+  Random.self_init ();
+  let dangerosite = Random.int (niveau+3) in
+  creation_ennemiesA dangerosite ennemies player_img
+*)  
+  
   let generate_map d p n player_img=
   let map = List.init n (fun e -> 
     let entity = Map.create "map" 0. 80. p d 40 in
-    let e1 = Enemy.create "ennemy" 200. 240. 0. 100. player_img in
-    let ennemies = [e1] in
-    CollisionResolver.set e1 collisionEnnemy;
+    let e1 = Gobelin.create 200. 200. player_img in
+    let e2 = Ball.create 300. 400. player_img in
+    let e3 = Trappeur.create 600. 160. 0. 100. player_img in
+    let e4 = Mine.create 120. 180. in
+    let ennemies = [e1;e2;e3;e4] in
+    (*let ennemies = creation_ennemies 1 [] player_img in*)
+    List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
     {id=entity;ennemies=ennemies;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
     )in
     Array.of_list (path map)
@@ -193,7 +215,7 @@ let change_room e =
 
 let collision door e = 
   let name = Name.get e in
-  if (String.compare name "player") == 0 (*&& (door.isActive)*) then begin
+  if (String.compare name "player") == 0 then begin
     change_room door;
     Position.set e (Teleport.get door);
     (*Velocity.set e Vector.zero;*)

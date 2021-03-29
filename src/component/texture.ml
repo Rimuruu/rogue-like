@@ -25,6 +25,7 @@ type t = Color of Gfx.color
 
 let black = Color (Gfx.color 0 0 0 255)
 let red = Color (Gfx.color 255 0 0 255)
+let rougefonce = Color (Gfx.color 120 0 0 255)
 let green = Color (Gfx.color 0 255 0 255)
 let blue = Color (Gfx.color 0 0 255 255)
 let yellow = Color (Gfx.color 255 255 0 255)

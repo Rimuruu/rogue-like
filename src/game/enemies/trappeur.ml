@@ -2,14 +2,14 @@ open Component_defs
 open Ecs
 
 
-let create name posX posY velX velY img= (*On choisit la direction qu'il prend quand il est créé*)
+let create posX posY velX velY trappeur_img = (*On choisit la direction qu'il prend quand il est créé*)
   let e = Entity.create () in
-  let anim = Texture.create_animation img 3 4 160 160 40 40 in
   Position.set e { x = posX; y = posY};
   Velocity.set e { x = velX; y = velY};
   Mass.set e infinity;
   Box.set e {width = 40; height=40 };
-  Name.set e name;
+  Name.set e "trappeur";
+  let anim = Texture.create_animation trappeur_img 3 4 160 160 40 40 in
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,3) anim;
   Texture.create_idle "right_walk" (3,6) anim;

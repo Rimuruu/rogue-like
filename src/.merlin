@@ -15,7 +15,7 @@ S ../lib/gfx/gfx_jsoo
 S .
 S component
 S game
-S game/ennemies
+S game/enemies
 S game/interface
 S img
 S io
