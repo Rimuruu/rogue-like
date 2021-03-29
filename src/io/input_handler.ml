@@ -18,3 +18,6 @@ let register_command ev f =
     Hashtbl.add commands  ev f
 
 let get_commands ev = Hashtbl.find_all commands ev
+
+let reset_all () = Hashtbl.clear commands;
+    Hashtbl.clear keysDown

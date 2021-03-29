@@ -12,7 +12,7 @@ sig
 
   val unregister : Entity.t -> unit
   (* remove an entity from this system *)
-  val reset : unit
+  val reset : unit -> unit
 
 end
 
@@ -33,7 +33,8 @@ struct
   let init () = T.init ()
   let update dt =
     T.update dt !elem_list
-  let reset = List.iter (fun e -> unregister e) !elem_list
+  let reset () = elem_list := [];
+  Entity.Table.clear elem_table
     
 end
 
@@ -57,5 +58,5 @@ let update_all dt =
 let reset_all _dt =
   List.iter (fun m ->
     let module M = (val m : S) in
-    M.reset 
+    M.reset ();
     ) !systems

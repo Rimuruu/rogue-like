@@ -1,5 +1,5 @@
 
-
+open Component_defs
 let frameStart = ref 0.0
 let frameEnd = ref 0.0
 let frameCount = ref 0
@@ -9,6 +9,7 @@ let frameDelay = 1. /. fps
 let player_img = Gfx.load_image("src/img/charSheet.png")
 let gobelin_img = Gfx.load_image("src/img/gobelinSheet.png")
 let heart_img = Gfx.load_image("src/img/heart.png")
+let go_img = Gfx.load_image("src/img/GameOverScreen.png")
 (* *)
 let init_game _dt = 
   System.init_all ();
@@ -58,10 +59,20 @@ let play_game dt =
   else true
 
 let end_game _dt =
-Gfx.debug (Format.asprintf " end");
 System.reset_all ();
- false 
+Input_handler.reset_all ();
+Input_handler.register_command (KeyUp "r") (fun () -> Game_state.set_state true);
+let _go_entity = GoScreen.create 0. 0. go_img in
+false 
  
+let reset_game dt =
+  
+Gfx.debug (Format.asprintf "reset");
+System.update_all dt;
+if (Game_state.get_status ()) then begin System.reset_all (); reset_all ();Input_handler.reset_all (); false end
+else true 
+ 
+
 let load_graphics _dt = 
   if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)&&(Gfx.image_ready gobelin_img)) then false
   else true
@@ -74,12 +85,12 @@ let chain_functions f_list =
               if f dt then
                 true
               else begin
-                funs := ll;
+                funs := ll@[f];
                 true
               end
 
 let run () =  
-  let m = chain_functions [load_graphics;init_game;play_game;end_game]in
+  let m = chain_functions [load_graphics;init_game;play_game;end_game;reset_game]in
   Gfx.main_loop m
 
                

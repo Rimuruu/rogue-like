@@ -51,7 +51,7 @@ let state = ref {
   walls_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
 }
 
-
+let set_state b = !state.isPlaying <- b
 
 let get_player () = !state.player
 let get_status ()= !state.isPlaying
