@@ -31,10 +31,10 @@ let collision e1 e2 =
   let delta_pos1 = Vector.mult n1 n in
   let delta_pos2 = Vector.mult (Float.neg n2) n in
   Position.set e1 (Vector.add pos1 delta_pos1);
-  Position.set e2 (Vector.add pos2 delta_pos2);
+  Position.set e2 (Vector.add pos2 delta_pos2)
  
   (* [5] On normalise n (on calcule un vecteur de même direction mais de norme 1) *)
-  let n = Vector.normalize n in
+  (*let n = Vector.normalize n in
   (* [6] Vitesse relative entre v2 et v1 *)
   let v = Vector.sub v1 v2 in
 
@@ -63,7 +63,7 @@ let collision e1 e2 =
   let new_v2 = Vector.sub v2 (Vector.mult (j/. m2) n) in
   (* [9] mise à jour des vitesses *)
   Velocity.set e1 new_v1;
-  Velocity.set e2 new_v2
+  Velocity.set e2 new_v2*)
 
 
 let create x y w h=

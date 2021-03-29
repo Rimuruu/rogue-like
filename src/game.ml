@@ -10,13 +10,13 @@ let player_img = Gfx.load_image("src/img/charSheet.png")
 let gobelin_img = Gfx.load_image("src/img/gobelinSheet.png")
 let heart_img = Gfx.load_image("src/img/heart.png")
 let go_img = Gfx.load_image("src/img/GameOverScreen.png")
+let projectile_img = Gfx.load_image("src/img/projectilesheet.png")
 (* *)
 let init_game _dt = 
   System.init_all ();
   Gfx.debug (Format.asprintf " init");
   
   let player = Player.create "player" 80. 240. player_img in
- 
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
@@ -25,6 +25,7 @@ let init_game _dt =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop "down" player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop "left" player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop "right" player);
+  Input_handler.register_command (KeyDown " ") (fun () -> Player.shot projectile_img player);
   Input_handler.set_key "up" false;
   Input_handler.set_key "down" false;
   Input_handler.set_key "left" false;
@@ -74,7 +75,7 @@ else true
  
 
 let load_graphics _dt = 
-  if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)&&(Gfx.image_ready gobelin_img)) then false
+  if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)&&(Gfx.image_ready gobelin_img)&&(Gfx.image_ready projectile_img)) then false
   else true
 
 let chain_functions f_list = 

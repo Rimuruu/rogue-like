@@ -2,6 +2,7 @@ open Component_defs
 open System_defs
 open Ecs
 
+let cpt = ref 0.0
 
 let create name x y img=
   let e = Entity.create () in
@@ -21,6 +22,7 @@ let create name x y img=
   Texture.create_idle "back" (6,7) anim;
   Texture.create_idle "left" (9,10) anim;
   Texture.play_idle anim "front";
+  Orientation.set e {x = 0.; y = 1.};
   Priority.set e 2;
   InvunerableFrame.set e 0;
   (* systems *)
@@ -35,6 +37,18 @@ let reset e x y =
 
   Position.set e { x = x; y = y }
 
+let shot projectile_img e =
+  let pos = Position.get e in
+  let ori = Orientation.get e in
+  if (Sys.time () -. !cpt >= 1.0) then
+  match ori.x,ori.y with
+  | _,1. -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.300.) (ori.y*.300.) "down_shot" in cpt:=Sys.time () ; () end
+  | _,-1. -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.300.) (ori.y*.300.) "up_shot" in cpt:=Sys.time () ; () end
+  | 1.,_ -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.300.) (ori.y*.300.) "right_shot" in cpt:=Sys.time () ; () end
+  | -1.,_ -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.300.) (ori.y*.300.) "left_shot" in cpt:=Sys.time () ;  () end
+  | _,_ ->  cpt:=Sys.time () ; () 
+  else ()
+
 
 
 let move_up e =
@@ -43,7 +57,8 @@ let move_up e =
     let anim = Surface.get e in
     Input_handler.set_key "up" true;
     Texture.play_idle anim "back_walk";
-    Velocity.set e { x = 0.0; y = -200.0 }
+    Velocity.set e { x = 0.0; y = -200.0 };
+    Orientation.set e {x = 0.; y = -1.}
   end
   
 let move_down e =
@@ -52,7 +67,8 @@ let move_down e =
     let anim = Surface.get e in
     Input_handler.set_key "down" true;
   Texture.play_idle anim "front_walk";
-    Velocity.set e { x = 0.0; y = 200.0 }
+    Velocity.set e { x = 0.0; y = 200.0 };
+    Orientation.set e {x = 0.; y = 1.}
   end
 
 let move_right e =
@@ -61,7 +77,8 @@ let move_right e =
     let anim = Surface.get e in
     Input_handler.set_key "right" true;
   Texture.play_idle anim "right_walk";
-    Velocity.set e { x = 200.0; y = 0.0 }
+    Velocity.set e { x = 200.0; y = 0.0 };
+    Orientation.set e {x = 1.; y = 0.}
   end
   
 let move_left e =
@@ -70,7 +87,8 @@ let move_left e =
     let anim = Surface.get e in
     Input_handler.set_key "left" true;
   Texture.play_idle anim "left_walk";
-    Velocity.set e { x = -200.0; y = 0.0 }
+    Velocity.set e { x = -200.0; y = 0.0 };
+    Orientation.set e {x = -1.; y = 0.}
   end
 
 let stop key e =
@@ -78,14 +96,14 @@ let stop key e =
   Input_handler.set_key key false;
   let nextKey,value = Input_handler.get_active_key ()in
   Gfx.debug (Format.asprintf "nextKey %s value %b"nextKey value);
-  if (String.compare key "down")==0 then begin Texture.play_idle anim "front"; end;
-  if (String.compare key "up")==0 then begin Texture.play_idle anim "back"; end;
-  if (String.compare key "right")==0 then begin Texture.play_idle anim "right"; end;
-  if (String.compare key "left")==0 then begin Texture.play_idle anim "left"; end;
+  if (String.compare key "down")==0 then begin Texture.play_idle anim "front";Orientation.set e {x = 0.; y = 1.}; end;
+  if (String.compare key "up")==0 then begin Texture.play_idle anim "back";Orientation.set e {x = 0.; y = -1.}; end;
+  if (String.compare key "right")==0 then begin Texture.play_idle anim "right";Orientation.set e {x = 1.; y = 0.}; end;
+  if (String.compare key "left")==0 then begin Texture.play_idle anim "left";Orientation.set e {x = -1.; y = 0.}; end;
   Velocity.set e Vector.zero;
-  if ((String.compare nextKey "down")==0)&&value then begin Texture.play_idle anim "front_walk";Velocity.set e { x = 0.0; y = 200.0 }; end;
-  if ((String.compare nextKey "up")==0)&&value then begin Texture.play_idle anim "back_walk";Velocity.set e { x = 0.0; y = -200.0 }; end;
-  if ((String.compare nextKey "right")==0)&&value then begin Texture.play_idle anim "right_walk";Velocity.set e { x = 200.0; y = 0.0 }; end;
-  if ((String.compare nextKey "left")==0)&&value then begin Texture.play_idle anim "left_walk"; Velocity.set e { x = -200.0; y = 0.0 }; end
+  if ((String.compare nextKey "down")==0)&&value then begin Texture.play_idle anim "front_walk";Velocity.set e { x = 0.0; y = 200.0 };Orientation.set e {x = 0.; y = 1.}; end;
+  if ((String.compare nextKey "up")==0)&&value then begin Texture.play_idle anim "back_walk";Velocity.set e { x = 0.0; y = -200.0 };Orientation.set e {x = 0.; y = -1.}; end;
+  if ((String.compare nextKey "right")==0)&&value then begin Texture.play_idle anim "right_walk";Velocity.set e { x = 200.0; y = 0.0 };Orientation.set e {x = 1.; y = 0.}; end;
+  if ((String.compare nextKey "left")==0)&&value then begin Texture.play_idle anim "left_walk"; Velocity.set e { x = -200.0; y = 0.0 };Orientation.set e {x = -1.; y = 0.}; end
   
   
