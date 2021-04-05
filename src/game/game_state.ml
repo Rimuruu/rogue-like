@@ -15,6 +15,7 @@ type t = {
   mutable isPlaying : bool;
   currentRoom : room;
   map : room array;
+  mutable floor : int;
   doors_entity : Entity.t array;
   walls_entity : Entity.t array;
 }
@@ -47,6 +48,7 @@ let state = ref {
   isPlaying = true;
   currentRoom = {id=Entity.dummy;ennemies=[];index=(-1);value=[||];doors=[||]};
   map = [||];
+  floor = 1;
   doors_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
   walls_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
 }
@@ -55,6 +57,34 @@ let set_state b = !state.isPlaying <- b
 
 let get_player () = !state.player
 let get_status ()= !state.isPlaying
+let get_state () = !state
+
+let active_length l = 
+  let rec aux l acc = 
+    match l with
+    | [] -> acc
+    | e::t ->
+        if (Active.has_component e) then
+          begin
+          if (Active.get e) then (aux t (acc+1))
+          else (aux t (acc))
+          end
+        else (aux t (acc))  
+  in
+  aux l 0
+
+let check_ennemies () = Array.fold_left (fun acc e -> if (active_length e.ennemies) > 0 then true else acc) false !state.map
+
+let random_interval a b c d = 
+  Random.self_init ();
+  if (Random.int 2) == 0 then
+    (Random.float (b-.a))+.a
+  else 
+    (Random.float (d-.c))+.c
+
+let random_between a b = 
+  Random.self_init ();
+  (Random.int (b-a))+a
 
 let disable_heart e =
   Draw_S.unregister e;
@@ -134,16 +164,28 @@ let creation_ennemies niveau ennemies player_img =
   let dangerosite = Random.int (niveau+3) in
   creation_ennemiesA dangerosite ennemies player_img
 *)  
+
+  let generate_ennemies nb img= 
+    let rec aux nb img = 
+      match nb with 
+      0 -> []
+      | _ ->
+        let x = random_interval 80. 360. 440. 680. in
+        let y = random_interval 160. 340. 360. 560. in
+        Gfx.debug (Format.asprintf "x %f y %f" x y);
+        let e = Gobelin.create x y img in
+        e::(aux (nb-1) img)
+    in
+    aux nb img
+
+
   
   let generate_map d p n player_img=
   let map = List.init n (fun e -> 
     let entity = Map.create "map" 0. 80. p d 40 in
-    let e1 = Gobelin.create 200. 200. player_img in
-    let e2 = Ball.create 300. 400. player_img in
-    let e3 = Trappeur.create 600. 160. 0. 100. player_img in
-    let e4 = Mine.create 120. 180. in
-    let ennemies = [e1;e2;e3;e4] in
-    (*let ennemies = creation_ennemies 1 [] player_img in*)
+    let floor = (get_state ()).floor in
+    let nbEnnemies = (random_between floor (floor+2)) in
+    let ennemies = generate_ennemies nbEnnemies player_img in
     List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
     {id=entity;ennemies=ennemies;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
     )in
@@ -160,12 +202,10 @@ let enable_door e =
   ()
 
 let enable_wall e =
-  Draw_S.register e;
   Collision_S.register e;
   ()
       
 let disable_wall e =
-  Draw_S.unregister e;
   Collision_S.unregister e;
   ()
 
@@ -210,7 +250,13 @@ let change_room e =
   let old_room = !state.currentRoom in
   state := { !state with currentRoom = room;};
   List.iter (fun e -> unload_ennemie e) old_room.ennemies;
-  List.iter (fun e -> load_ennemie e) room.ennemies;
+  List.iter (fun e ->
+    if (Active.has_component e) then
+      begin      
+        if (Active.get e)then  load_ennemie e 
+      end
+    else ()
+    ) room.ennemies;
   change_door ()        
 
 let collision door e = 
@@ -221,14 +267,20 @@ let collision door e =
     (*Velocity.set e Vector.zero;*)
   end
   
-
+    let change_floor map = 
+      let floor = (get_state ()).floor in
+      state := {!state with floor = floor+1;isPlaying = true; map = map;currentRoom=(Array.get map 0);};
+      Draw_S.register !state.currentRoom.id;
+      List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
+      update_health ();   
+      change_door ()
 
 
     let init pe1 map heart_img=
       let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
       let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
       Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      state := { isPlaying = true; player = pe1; map = map;currentRoom=(Array.get map 0);doors_entity = doorsInit;walls_entity = wallsInit};
+      state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
       player_state := {health =3};

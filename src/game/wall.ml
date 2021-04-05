@@ -72,12 +72,10 @@ let e = Entity.create () in
   Box.set e { width = w; height = h};
   Velocity.set e Vector.zero;
   Mass.set e infinity;
-  Surface.set e Texture.blue;
   Priority.set e 1;
   Name.set e "wall";
   CollisionResolver.set e collision;
   (* systems *)
-  Draw_S.register e;
   Collision_S.register e;
   e
 

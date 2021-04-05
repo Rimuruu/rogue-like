@@ -1,6 +1,18 @@
 open Component_defs
 open Ecs
+open System_defs
 
+let dead e =
+  Collision_S.unregister e;
+  Control_S.unregister e;
+  Draw_S.unregister e; 
+  Move_S.unregister e;
+  Active.set e false
+
+let hit e = 
+  let hp = Health.get e in
+  Health.set e (hp-1);
+  if (hp-1) == 0 then dead e
 
 let create posX posY velX velY img= (*On choisit la direction qu'il prend quand il est créé*)
   let e = Entity.create () in
@@ -17,9 +29,11 @@ let create posX posY velX velY img= (*On choisit la direction qu'il prend quand 
   Texture.create_idle "left_walk" (9,12) anim;
   Texture.play_idle anim "front_walk";
   Priority.set e 2;
+  Active.set e true;
 
   (* systems *)
-  
+  Cleaning_S.register e;
+
   e
 
 let reset e x y = 

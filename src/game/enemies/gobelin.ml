@@ -1,4 +1,5 @@
 open Component_defs
+open System_defs 
 open Ecs
 
 
@@ -17,8 +18,11 @@ let create posX posY img = (*On choisit la direction qu'il prend quand il est cr
   Texture.create_idle "left_walk" (9,12) anim;
   Texture.play_idle anim "front_walk";
   Priority.set e 2;
+  Health.set e 3;
+  Active.set e true;
 
   (* systems *)
+  Cleaning_S.register e;
   
   e
 

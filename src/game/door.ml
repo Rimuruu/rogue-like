@@ -13,7 +13,7 @@ let e = Entity.create () in
   Velocity.set e Vector.zero;
   Mass.set e infinity;
   Name.set e name;
-  Surface.set e Texture.yellow;
+  Surface.set e Texture.black;
   Priority.set e 1;
 
   (* systems *)

@@ -14,10 +14,10 @@ let move_to e1 e2 =
   let _dist = Float.sqrt ((distX**2.) +. (distY**2.)) in
   let anim = Surface.get e1 in
   if (distX ** 2.) >= ((distY ** 2.)+.(10.**2.)) then 
-    if (distX >= 0.) then begin Velocity.set e1 { x = -100.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = -100.0; y = 0.0 }))then Texture.play_idle anim "left_walk" end
-    else  begin  Velocity.set e1 { x = 100.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = 100.0; y = 0.0 })) then Texture.play_idle anim "right_walk" end
-  else  if (distY >= 0.) then begin  Velocity.set e1 { x = 0.0; y = -100.0 }; if ( not(Vector.is_equal vecE1 { x = 0.0; y = -100.0 })) then Texture.play_idle anim "back_walk" end
-        else  begin Velocity.set e1 { x = 0.0; y = 100.0 }; if (not(Vector.is_equal vecE1 { x = 0.0; y = 100.0 })) then Texture.play_idle anim "front_walk" end
+    if (distX >= 0.) then begin Velocity.set e1 { x = -50.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = -50.0; y = 0.0 }))then Texture.play_idle anim "left_walk" end
+    else  begin  Velocity.set e1 { x = 50.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = 50.0; y = 0.0 })) then Texture.play_idle anim "right_walk" end
+  else  if (distY >= 0.) then begin  Velocity.set e1 { x = 0.0; y = -50.0 }; if ( not(Vector.is_equal vecE1 { x = 0.0; y = -50.0 })) then Texture.play_idle anim "back_walk" end
+        else  begin Velocity.set e1 { x = 0.0; y = 50.0 }; if (not(Vector.is_equal vecE1 { x = 0.0; y = 50.0 })) then Texture.play_idle anim "front_walk" end
         
 
   

@@ -11,6 +11,8 @@ module CollisionResolver = Component.Make(struct type t = Entity.t -> Entity.t -
 module Owner = Component.Make(struct type t = Entity.t let name = "owner" end)
 module InvunerableFrame = Component.Make(struct type t = int  let name = "invunerableFrame" end)
 module Orientation = Component.Make(struct include Vector let name = "orientation" end)
+module Health = Component.Make(struct type t = int let name = "health" end)
+module Active = Component.Make(struct type t = bool let name = "active" end)
 
 
 let reset_all () = 
@@ -24,4 +26,21 @@ let reset_all () =
   Name.reset ();
   CollisionResolver.reset ();
   Owner.reset ();
-  InvunerableFrame.reset ()
+  InvunerableFrame.reset ();
+  Health.reset ();
+  Active.reset ()
+
+  let disable_all e = 
+    Position.delete e;
+    Teleport.delete e;
+    Priority.delete e;
+    Velocity.delete e;
+    Mass.delete e;
+    Box.delete e;
+    Surface.delete e;
+    Name.delete e;
+    CollisionResolver.delete e;
+    Owner.delete e;
+    InvunerableFrame.delete e;
+    Health.delete e;
+    Active.delete e

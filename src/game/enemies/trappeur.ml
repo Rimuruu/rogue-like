@@ -6,7 +6,7 @@ let create posX posY velX velY trappeur_img = (*On choisit la direction qu'il pr
   let e = Entity.create () in
   Position.set e { x = posX; y = posY};
   Velocity.set e { x = velX; y = velY};
-  Mass.set e infinity;
+  Mass.set e 20.;
   Box.set e {width = 40; height=40 };
   Name.set e "trappeur";
   let anim = Texture.create_animation trappeur_img 3 4 160 160 40 40 in

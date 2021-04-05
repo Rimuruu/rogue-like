@@ -14,11 +14,12 @@ val init : Entity.t -> room array -> Gfx.image -> unit
 val get_player : unit -> Entity.t
 val get_status : unit -> bool
 val set_state : bool -> unit
-
+val check_ennemies : unit -> bool
 
 val enable_wall : Entity.t -> unit
 
 val door_f  : int -> int
 
 val generate_map : int array array -> Gfx.color array -> int -> Gfx.image -> room array
+val change_floor : room array -> unit
 

@@ -16,7 +16,7 @@ let init_game _dt =
   System.init_all ();
   Gfx.debug (Format.asprintf " init");
   
-  let player = Player.create "player" 80. 240. player_img in
+  let player = Player.create "player" 400. 340. player_img in
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
   Input_handler.register_command (KeyDown "q") (fun () -> Player.move_left player);
@@ -55,6 +55,7 @@ let play_game dt =
   while !frameEnd < frameDelay do frameEnd := (Sys.time ()) -. !frameStart; done;
   frameTimer := !frameTimer +. !frameEnd;
   incr frameCount;
+  if not(Game_state.check_ennemies ()) then begin let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img in Game_state.change_floor map; end;
   if !frameTimer >= 1.0 then begin Gfx.debug (Format.asprintf "fps : %d" !frameCount); frameTimer := 0.;frameCount:=0; end;
   if (not(Game_state.get_status ())) then false
   else true
@@ -75,7 +76,7 @@ else true
  
 
 let load_graphics _dt = 
-  if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)&&(Gfx.image_ready gobelin_img)&&(Gfx.image_ready projectile_img)) then false
+  if ((Gfx.image_ready player_img)&&(Gfx.image_ready heart_img)&&(Gfx.image_ready gobelin_img)&&(Gfx.image_ready projectile_img)&&(Gfx.image_ready go_img)) then false
   else true
 
 let chain_functions f_list = 
