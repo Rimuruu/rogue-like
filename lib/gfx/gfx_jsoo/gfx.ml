@@ -80,21 +80,27 @@ let load_image src =
 let image_ready img =
   Js.to_bool img ##.complete
 
-let draw_image (ctx : render) img x y =
+let draw_image (ctx : render) img x y alpha=
+  ctx ##. globalAlpha := alpha;
   ctx ## drawImage img (float x) (float y)
 
-let draw_image_scale (ctx : render) img dx dy dw dh =
+let draw_image_scale (ctx : render) img dx dy dw dh alpha=
+  ctx ##. globalAlpha := alpha;
   ctx ## drawImage_withSize img  (float dx) (float dy) (float dw) (float dh)
 
-let draw_image_full (ctx : render) img sx sy sw sh dx dy dw dh =
+let draw_image_full (ctx : render) img sx sy sw sh dx dy dw dh alpha=
+  ctx ##. globalAlpha := alpha;
   ctx ## drawImage_full img
   (float sx) (float sy) (float sw) (float sh)
   (float dx) (float dy) (float dw) (float dh)
 
-let draw_text (ctx : render) text x y font color =
+let draw_text (ctx : render) text x y font color size alpha=
+  ctx ##. globalAlpha := alpha;
   ctx ##. font := Js.string font;
   ctx ##. fillStyle := Js.string color;
-  ctx ## fillText (Js.string text) (float x) (float y)
+  ctx ## fillText_withWidth (Js.string text) (float x) (float y)  size
+
+
 
 let measure_text (ctx : render) text font =
   ctx ##. font := Js.string font;

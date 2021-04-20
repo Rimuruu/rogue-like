@@ -23,6 +23,10 @@ let update dt el =
     let pos = Position.get e in
     let box = try Box.get e with _ -> {width = 0; height = 0} in
     let color = Surface.get e in
+    if (TextD.has_component e) then begin
+      let text = TextD.get e in
+      Gfx.draw_text ctx text.text (int_of_float text.x) (int_of_float text.y) text.font text.color 80. 1.;
+    end;
     match color with 
       | Color color1 -> Gfx.fill_rect ctx (int_of_float pos.x) (int_of_float pos.y) box.width box.height color1;
       | Image image -> Gfx.blit_scale ctx image (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
@@ -31,4 +35,5 @@ let update dt el =
         Gfx.blit_scale ctx (Texture.get_frame anim (int_of_float speed.x) dt time cpt) (int_of_float pos.x) (int_of_float pos.y) box.width box.height;
       | Tile tilemap -> Texture.draw_tilemap tilemap ctx (int_of_float pos.x) (int_of_float pos.y)
         ) (list_sort)
+      
 

@@ -9,10 +9,10 @@ let dead e =
   Move_S.unregister e;
   Active.set e false
 
-let hit e = 
+let hit e degat= 
   let hp = Health.get e in
-  Health.set e (hp-1);
-  if (hp-1) == 0 then dead e
+  Health.set e (hp-(int_of_float degat));
+  if (hp-(int_of_float degat)) <= 0 then dead e
 
 let create posX posY velX velY img= (*On choisit la direction qu'il prend quand il est créé*)
   let e = Entity.create () in

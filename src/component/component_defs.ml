@@ -13,6 +13,8 @@ module InvunerableFrame = Component.Make(struct type t = int  let name = "invune
 module Orientation = Component.Make(struct include Vector let name = "orientation" end)
 module Health = Component.Make(struct type t = int let name = "health" end)
 module Active = Component.Make(struct type t = bool let name = "active" end)
+module Statistics = Component.Make(struct include Stats let name = "stats" end)
+module TextD = Component.Make(struct include Text let name = "text" end)
 
 
 let reset_all () = 
@@ -28,7 +30,9 @@ let reset_all () =
   Owner.reset ();
   InvunerableFrame.reset ();
   Health.reset ();
-  Active.reset ()
+  Active.reset ();
+  Statistics.reset ();
+  TextD.reset ()
 
   let disable_all e = 
     Position.delete e;
@@ -43,4 +47,6 @@ let reset_all () =
     Owner.delete e;
     InvunerableFrame.delete e;
     Health.delete e;
-    Active.delete e
+    Active.delete e;
+    Statistics.delete e;
+    TextD.delete e

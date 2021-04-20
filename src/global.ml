@@ -29,3 +29,4 @@ let _doorTop = (400,120)
 let _doorBottom = (400,600)
 let _doorLeft = (80,400)
 let _doorRight = (720,400)
+

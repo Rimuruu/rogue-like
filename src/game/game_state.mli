@@ -10,12 +10,15 @@ type room = {
 }
 
 
-val init : Entity.t -> room array -> Gfx.image -> unit
+val init : Entity.t -> room array -> Gfx.image -> Gfx.image -> Gfx.image ->  Entity.t list -> unit
 val get_player : unit -> Entity.t
 val get_status : unit -> bool
 val set_state : bool -> unit
+val set_floor : int -> unit
 val check_ennemies : unit -> bool
 
+val update_count_e : unit -> unit
+val update_health : unit -> unit
 val enable_wall : Entity.t -> unit
 
 val door_f  : int -> int

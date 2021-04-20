@@ -49,20 +49,20 @@ val load_image : string -> image
 val image_ready : image -> bool
 (** returns true if the image has finished loading *)
 
-val draw_image : render -> image -> int -> int -> unit
+val draw_image : render -> image -> int -> int -> float-> unit
 (** draw_image r i x y
     draws image i on surface r at point (x,y) *)
 
-val draw_image_scale : render -> image -> int -> int -> int -> int -> unit
+val draw_image_scale : render -> image -> int -> int -> int -> int -> float -> unit
 (** draw_image_scale r i dx dy dw dh
     draws image i on surface r at point (dx,dy) with stretching it to dw width and dh height *)
 
-val draw_image_full : render -> image -> int -> int -> int -> int -> int -> int -> int -> int -> unit
+val draw_image_full : render -> image -> int -> int -> int -> int -> int -> int -> int -> int -> float -> unit
 (** draw_image_full r i sx sy sw sh dx dy dw dh
     draws image extracted from i at point (sx, sy) with dimensions (sw, sh)
     on surface r at point (dx,dy) with stretching it to dw width and dh height *)
 
-val draw_text : render -> string -> int -> int -> string -> color -> unit
+val draw_text : render -> string -> int -> int -> string -> color -> float -> float ->  unit
 (** draw_text r t x y f
     draws text t on render surface r at coordinates x y.
     f is a string describing the font, for instance "30px Arial"

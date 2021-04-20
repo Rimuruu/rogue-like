@@ -18,11 +18,15 @@ type t = {
   mutable floor : int;
   doors_entity : Entity.t array;
   walls_entity : Entity.t array;
+  itempool : Entity.t list;
 }
 
 type t_interface = {
   vie_entity : Entity.t array;
+  obj_entity : Entity.t list;
   background : Entity.t;
+  e_info : Entity.t;
+  f_info : Entity.t;
   pos : Vector.t;
 }
 
@@ -33,7 +37,10 @@ type t_player_state = {
 
 let interface = ref {
   vie_entity = [||];
+  obj_entity = [];
   background = Entity.dummy;
+  e_info = Entity.dummy;
+  f_info = Entity.dummy;
   pos = {x=20.;y=60.};
 }
 
@@ -51,13 +58,19 @@ let state = ref {
   floor = 1;
   doors_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
   walls_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
+  itempool = [];
 }
 
 let set_state b = !state.isPlaying <- b
+let set_floor f = !state.floor <- f
+let set_itempool ip = state := {!state with itempool = ip;}
+let set_obj obj = interface := {!interface with obj_entity = obj;}
+
 
 let get_player () = !state.player
 let get_status ()= !state.isPlaying
 let get_state () = !state
+let get_obj () = !interface.obj_entity
 
 let active_length l = 
   let rec aux l acc = 
@@ -74,6 +87,7 @@ let active_length l =
   aux l 0
 
 let check_ennemies () = Array.fold_left (fun acc e -> if (active_length e.ennemies) > 0 then true else acc) false !state.map
+let count_ennemies () = Array.fold_left (fun acc e -> (active_length e.ennemies+acc)) 0 !state.map
 
 let random_interval a b c d = 
   Random.self_init ();
@@ -99,6 +113,17 @@ let update_health () =
   Array.iteri (fun i e -> if (i > (!player_state.health-1)) then disable_heart e else enable_heart e) !interface.vie_entity;
   if !player_state.health == 0 then !state.isPlaying <- false
 
+let update_count_e () = 
+    let c = count_ennemies () in
+    let info = !interface.e_info in
+    Info.changeText info (string_of_int c);
+    ()
+
+let update_count_f () = 
+    let f = !state.floor in
+    let info = !interface.f_info in
+    Info.changeText info (string_of_int f);
+    ()
 
 let door_f n =
   match n with 
@@ -146,24 +171,7 @@ let path m =
         end;
       end
 
-(*
-let rec creation_ennemiesA dangerosite ennemies player_img =
-  if dangerosite > 0 then begin
-    let menace = Random.int dangerosite in
-    match menace with
-    |1 -> creation_ennemiesA (dangerosite-1) ((Ball.create 300. 400. player_img)::ennemies) player_img
-    |2 -> if Random.bool () then creation_ennemiesA (dangerosite-2) ((Gobelin.create 300. 400. player_img)::ennemies) player_img
-                           else creation_ennemiesA (dangerosite-2) ((Trappeur.create 300. 400. 0. 100. player_img)::ennemies) player_img
-    |_ -> creation_ennemiesA dangerosite ennemies player_img
-    end
-  else
-    ennemies
 
-let creation_ennemies niveau ennemies player_img =
-  Random.self_init ();
-  let dangerosite = Random.int (niveau+3) in
-  creation_ennemiesA dangerosite ennemies player_img
-*)  
 
   let generate_ennemies nb img= 
     let rec aux nb img = 
@@ -242,6 +250,45 @@ let unload_ennemie e =
   Control_S.unregister e;
   Draw_S.unregister e;
   Move_S.unregister e
+
+let update_obj () =
+  let x = 55. in
+  let y = 17.5 in
+  List.iteri (fun i e ->
+    Gfx.debug (Format.asprintf "update %d " i);
+    Draw_S.register e;
+    Objet.changePos e (120.+.(x*.(float_of_int i))) y;
+    ) !interface.obj_entity;
+  ()
+  
+
+let appenditem () =
+    let itempool = !state.itempool in
+    let obj_entity = !interface.obj_entity in
+    let player = get_player () in
+    let old_stats = Statistics.get player in
+    Random.self_init ();
+    let r = random_between 0 (List.length itempool)in
+    Gfx.debug (Format.asprintf "length %d" (List.length itempool));
+    let item = (List.nth itempool r) in
+    Gfx.debug (Format.asprintf "item %d r %d" r r);
+    set_itempool (List.filter (fun e -> e <> item) itempool);
+    set_obj (item::obj_entity);
+    Statistics.set player (Stats.addStat old_stats (Statistics.get item));
+    update_obj ();
+    ()
+
+    let _appenditembyindex e =
+      let itempool = !state.itempool in
+      let obj_entity = !interface.obj_entity in
+      let player = get_player () in
+      let old_stats = Statistics.get player in
+      let item = (List.nth itempool e) in
+      set_itempool (List.filter (fun e -> e <> item) itempool);
+      set_obj (item::obj_entity);
+      Statistics.set player (Stats.addStat old_stats (Statistics.get item));
+      update_obj ();
+      ()
         
 let change_room e =
   let name = Name.get e in
@@ -264,29 +311,37 @@ let collision door e =
   if (String.compare name "player") == 0 then begin
     change_room door;
     Position.set e (Teleport.get door);
-    (*Velocity.set e Vector.zero;*)
   end
   
     let change_floor map = 
       let floor = (get_state ()).floor in
+      let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
+      let itempool = !state.itempool in
+      let obj = get_obj ()in
+      if ((List.length itempool)>0) && ((List.length obj)<6) then begin appenditem (); end;
       state := {!state with floor = floor+1;isPlaying = true; map = map;currentRoom=(Array.get map 0);};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
-      update_health ();   
+      Position.set player {x=400.;y=340.};
+      update_health ();  
+      update_count_f (); 
       change_door ()
 
 
-    let init pe1 map heart_img=
+    let init pe1 map heart_img e_info_img f_info_img  itempool=
       let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
       let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
+      let e_info = Info.create 600. 25. "info_e" e_info_img "0" 35 35 40. 25. in
+      let f_info = Info.create 700. 20. "info_f" f_info_img "0" 45 45 50. 30. in
       Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit};
+      state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit; itempool = itempool;};
       Draw_S.register !state.currentRoom.id;
       List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
       player_state := {health =3};
-      interface := {!interface with vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
+      interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
       update_health ();
-      
+      update_count_e ();
+      update_count_f ();
       change_door ()
 
     

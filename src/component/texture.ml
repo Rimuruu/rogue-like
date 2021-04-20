@@ -18,10 +18,12 @@ type tilemap = {
         grid_size : int;
 }
 
+
 type t = Color of Gfx.color
         | Image of Gfx.render
         | Animation of animation
         | Tile of tilemap
+        
 
 let black = Color (Gfx.color 0 0 0 255)
 let red = Color (Gfx.color 255 0 0 255)
@@ -33,8 +35,13 @@ let gray = Color (Gfx.color 64 70 72 255)
 
 let create_img img l h = 
         let r = Gfx.create_offscreen l h in
-        Gfx.draw_image_scale r img 0 0 l h;
+        Gfx.draw_image_scale r img 0 0 l h 1.;
         Image r
+
+let create_img_scale img l h x y= 
+                let r = Gfx.create_offscreen l h in
+                Gfx.draw_image_full r img x y l h 0 0 l h 1.;
+                Image r
 
 let create_tilemap colors tilemap size= Tile {tiles = colors; map = tilemap;grid_size = size}
 
@@ -42,7 +49,7 @@ let create_animation img num_w num_h sw sh dw dh =
         let array_frame = Array.init (num_w * num_h) (fun _i -> Gfx.create_offscreen dw dh) in
         for y = 0 to (num_h-1) do
                 for x = 0 to (num_w-1) do
-                        Gfx.draw_image_full array_frame.(y*num_w+x) img (x*sw) (y*sh) sw sh 0 0 dw dh;
+                        Gfx.draw_image_full array_frame.(y*num_w+x) img (x*sw) (y*sh) sw sh 0 0 dw dh 1.;
                 done
         done;
         Animation {frames = array_frame; current = 0;currentIdle = (0,num_w * num_h) ; idleTable = Hashtbl.create 32}
@@ -58,7 +65,6 @@ let draw_tilemap tilemap ctx posX posY=
         let size = tilemap.grid_size in
         let sizeX = Array.length tilemap.map in
         let sizeY = Array.length tilemap.map.(0) in
-
         for y = 0 to (sizeX-1) do
                 for x = 0 to (sizeY-1) do
                         tile := tilemap.map.(y).(x);
