@@ -10,6 +10,7 @@ let create posX posY img = (*On choisit la direction qu'il prend quand il est cr
   Velocity.set e { x = 0.0; y = 0.0};
   Mass.set e infinity;
   Box.set e {width = 40; height=40 };
+  BoxCollider.set e {width = 35; height=38 };
   Name.set e "ennemy";
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,3) anim;

@@ -2,7 +2,7 @@ open Component_defs
 open System_defs
 open Ecs
 
-let cpt = ref 0.0
+
 
 let create name x y img=
   let e = Entity.create () in
@@ -11,6 +11,7 @@ let create name x y img=
   Velocity.set e Vector.zero;
   Mass.set e infinity;
   Box.set e {width = 40; height=40 };
+  BoxCollider.set e {width = 30; height=35 };
   Name.set e name;
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,3) anim;
@@ -38,18 +39,7 @@ let reset e x y =
 
   Position.set e { x = x; y = y }
 
-let shot projectile_img e =
-  let pos = Position.get e in
-  let ori = Orientation.get e in
-  let stats = Statistics.get e in
-  if (Sys.time () -. !cpt >= 1.0) then
-  match ori.x,ori.y with
-  | _,1. -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "down_shot" stats.strength  in cpt:=Sys.time () ; () end
-  | _,-1. -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "up_shot" stats.strength in cpt:=Sys.time () ; () end
-  | 1.,_ -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "right_shot" stats.strength in cpt:=Sys.time () ; () end
-  | -1.,_ -> begin let _projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "left_shot" stats.strength in cpt:=Sys.time () ;  () end
-  | _,_ ->  cpt:=Sys.time () ; () 
-  else ()
+
 
 
 

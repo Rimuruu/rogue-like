@@ -3,6 +3,7 @@ open System_defs
 open Ecs
 
 let delete e = 
+  Gfx.debug (Format.asprintf "delete pro");
   Move_S.unregister e;
   Draw_S.unregister e;
   Collision_S.unregister e;
@@ -17,6 +18,8 @@ let collision e1 e2 =
     let stats = Statistics.get e1 in
     if ((String.compare name "wall") == 0 ) ||((String.compare name "bottom") == 0 )||((String.compare name "top") == 0 )||((String.compare name "right") == 0 )||((String.compare name "left") == 0 ) then delete e1
     else if ((String.compare name "ennemy") == 0 ) then begin Enemy.hit e2 stats.strength; delete e1 end
+    else if ((String.compare name "spider") == 0 ) then begin Enemy.hit e2 stats.strength; delete e1 end
+    else if ((String.compare name "mine") == 0 ) then begin Mine.destruction e2; delete e1 end
     else ()
   end
 
@@ -31,6 +34,7 @@ let create name x y img velX velY idle degat =
   Velocity.set e { x = velX; y = velY};
   Mass.set e infinity;
   Box.set e {width = 20; height=20 };
+  BoxCollider.set e {width = 20; height=20 };
   Name.set e name;
   Surface.set e anim;
   Texture.create_idle "right_shot" (0,3) anim;

@@ -7,6 +7,7 @@ let dead e =
   Control_S.unregister e;
   Draw_S.unregister e; 
   Move_S.unregister e;
+  Logic_S.unregister e;
   Active.set e false
 
 let hit e degat= 
@@ -21,6 +22,7 @@ let create posX posY velX velY img= (*On choisit la direction qu'il prend quand 
   Velocity.set e { x = velX; y = velY};
   Mass.set e infinity;
   Box.set e {width = 40; height=40 };
+  BoxCollider.set e {width = 40; height=40 };
   Name.set e "ennemy";
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,3) anim;

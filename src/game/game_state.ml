@@ -6,6 +6,7 @@ type room = {
   index : int;
   id: Entity.t;
   ennemies : Entity.t list;
+  obstacles : Entity.t list;
   value : int array array;
   doors : (bool*int) array;
 }
@@ -53,13 +54,15 @@ let player_state = ref {
 let state = ref {
   player = Entity.dummy;
   isPlaying = true;
-  currentRoom = {id=Entity.dummy;ennemies=[];index=(-1);value=[||];doors=[||]};
+  currentRoom = {id=Entity.dummy;obstacles=[];ennemies=[];index=(-1);value=[||];doors=[||]};
   map = [||];
   floor = 1;
   doors_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
   walls_entity = [|Entity.dummy;Entity.dummy;Entity.dummy;Entity.dummy|];
   itempool = [];
 }
+
+let cpt = ref 0.0
 
 let set_state b = !state.isPlaying <- b
 let set_floor f = !state.floor <- f
@@ -71,6 +74,20 @@ let get_player () = !state.player
 let get_status ()= !state.isPlaying
 let get_state () = !state
 let get_obj () = !interface.obj_entity
+
+let load_ennemie e =
+  Collision_S.register e;
+  Control_S.register e;
+  Draw_S.register e;
+  Move_S.register e;
+  Logic_S.register e
+
+let unload_ennemie e =
+  Collision_S.unregister e;
+  Control_S.unregister e;
+  Draw_S.unregister e;
+  Move_S.unregister e;
+  Logic_S.unregister e
 
 let active_length l = 
   let rec aux l acc = 
@@ -89,7 +106,14 @@ let active_length l =
 let check_ennemies () = Array.fold_left (fun acc e -> if (active_length e.ennemies) > 0 then true else acc) false !state.map
 let count_ennemies () = Array.fold_left (fun acc e -> (active_length e.ennemies+acc)) 0 !state.map
 
-let random_interval a b c d = 
+let add_obstacle e = 
+  let room = !state.currentRoom in
+  let update = {room with obstacles=(e::(room.obstacles));}in
+  Array.set !state.map room.index update;
+  state := { !state with currentRoom = update;};
+  ()
+
+let _random_interval a b c d = 
   Random.self_init ();
   if (Random.int 2) == 0 then
     (Random.float (b-.a))+.a
@@ -99,6 +123,10 @@ let random_interval a b c d =
 let random_between a b = 
   Random.self_init ();
   (Random.int (b-a))+a
+
+let random_between_float a b = 
+  Random.self_init ();
+  (Random.float (b-.a))+.a
 
 let disable_heart e =
   Draw_S.unregister e;
@@ -143,7 +171,6 @@ let random_door room =
     List.nth !list (Random.int (List.length !list))
 
 let path m = 
-
   let rec path_aux map room =
     let door = random_door room in
     match map with 
@@ -160,44 +187,99 @@ let path m =
   in
   path_aux (List.tl m) (List.hd m) 
 
-  let collisionEnnemy _ennemy e =
-    let name = Name.get e in
+
+let shot projectile_img e =
+  let pos = Position.get e in
+  let ori = Orientation.get e in
+  let stats = Statistics.get e in
+  if (Sys.time () -. !cpt >= 1.0) then
+  match ori.x,ori.y with
+  | _,1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "down_shot" stats.strength  in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | _,-1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "up_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | 1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "right_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | -1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "left_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile;  () end
+  | _,_ ->  cpt:=Sys.time () ; () 
+  else ()
+
+
+let collisionMine e1 e2 =
+    let name = Name.get e2 in
       if (String.compare name "player") == 0 then begin
-        let vf = InvunerableFrame.get e in
+        let vf = InvunerableFrame.get e2 in
         if vf == 0 then begin
           !player_state.health <- !player_state.health-1;
           update_health ();
-          InvunerableFrame.set e 65;
+          InvunerableFrame.set e2 65;
+          Mine.destruction e1;
         end;
       end
 
+let spawnMine img e = 
+  let pos = Position.get e in
+  Gfx.debug (Format.asprintf "spawnmine");
+  let mine = Mine.create pos.x pos.y img in
+  CollisionResolver.set mine collisionMine;
+  load_ennemie mine;
+  add_obstacle mine;
+  ()
+
+let collisionEnnemy _ennemy e =
+  let name = Name.get e in
+    if (String.compare name "player") == 0 then begin
+      let vf = InvunerableFrame.get e in
+      if vf == 0 then begin
+        !player_state.health <- !player_state.health-1;
+        update_health ();
+        InvunerableFrame.set e 65;
+      end;
+    end
 
 
-  let generate_ennemies nb img= 
-    let rec aux nb img = 
-      match nb with 
-      0 -> []
-      | _ ->
-        let x = random_interval 80. 360. 440. 680. in
-        let y = random_interval 160. 340. 360. 560. in
-        Gfx.debug (Format.asprintf "x %f y %f" x y);
-        let e = Gobelin.create x y img in
-        e::(aux (nb-1) img)
-    in
-    aux nb img
+let random_ennemy x y gbl_img spider_img mine_img=
+  Random.self_init ();
+  let r = random_between 0 2 in
+  match r with 
+  | 0 -> Gobelin.create x y gbl_img 
+  | 1 -> let spider = Spider.create x y spider_img in  Cpt.set spider ({cpt = Sys.time (); action = (spawnMine mine_img) }); spider
+  | _ -> Gobelin.create x y gbl_img 
 
+let random_spawn () = 
+  Random.self_init ();
+  let r = random_between 0 4 in
+  match r with 
+  | 0 -> ((random_between_float 80. 240.), (random_between_float 160. 280.))
+  | 1 -> ((random_between_float 540. 680.), (random_between_float 160. 280.))
+  | 2 -> ((random_between_float 540. 680.), (random_between_float 400. 540.))
+  | 3 -> ((random_between_float 80. 240.), (random_between_float 400. 540.))
+  | _ -> ((random_between_float 80. 240.), (random_between_float 160. 280.))
+
+let generate_ennemies nb gbl_img spider_img mine_img= 
+  let rec aux  nb gbl_img spider_img mine_img= 
+    match nb with 
+    0 -> []
+    | _ ->
+      let spawn = random_spawn ()  in
+      let x = fst spawn in
+      let y = snd spawn in 
+      Gfx.debug (Format.asprintf "x %f y %f" x y);
+      let e = random_ennemy x y gbl_img spider_img mine_img in
+      e::(aux (nb-1) gbl_img spider_img mine_img)
+  in
+  aux nb gbl_img spider_img mine_img
 
   
-  let generate_map d p n player_img=
-  let map = List.init n (fun e -> 
-    let entity = Map.create "map" 0. 80. p d 40 in
-    let floor = (get_state ()).floor in
-    let nbEnnemies = (random_between floor (floor+2)) in
-    let ennemies = generate_ennemies nbEnnemies player_img in
-    List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
-    {id=entity;ennemies=ennemies;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
-    )in
-    Array.of_list (path map)
+let generate_map d p n gbl_img spider_img mine_img=
+let map = List.init n (fun e -> 
+  let entity = Map.create "map" 0. 80. p d 40 in
+  let floor = (get_state ()).floor in
+  let nbEnnemies = (random_between floor (floor+2)) in
+  let ennemies = generate_ennemies nbEnnemies gbl_img spider_img mine_img in
+  List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
+  let obstacles = [] in
+  List.iter (fun e -> CollisionResolver.set e collisionMine) obstacles;
+  {id=entity;ennemies=ennemies;obstacles=obstacles;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
+  )in
+  Array.of_list (path map)
   
 let disable_door e =
   Draw_S.unregister e;
@@ -217,7 +299,7 @@ let disable_wall e =
   Collision_S.unregister e;
   ()
 
-    let change_door () =
+let change_door () =
   let d = !state.currentRoom.doors in
   let d_e = !state.doors_entity in
   let w_e = !state.walls_entity in
@@ -233,23 +315,13 @@ let disable_wall e =
   done
 
 let get_door name = 
-if (String.compare name "left")==0 then (Array.get !state.currentRoom.doors 0)
-else if (String.compare name "top")==0 then (Array.get !state.currentRoom.doors 1)
-else if (String.compare name "right")==0 then(Array.get !state.currentRoom.doors 2)
-else if (String.compare name "bottom")==0 then(Array.get !state.currentRoom.doors 3)
-else (false,1)
+  if (String.compare name "left")==0 then (Array.get !state.currentRoom.doors 0)
+  else if (String.compare name "top")==0 then (Array.get !state.currentRoom.doors 1)
+  else if (String.compare name "right")==0 then(Array.get !state.currentRoom.doors 2)
+  else if (String.compare name "bottom")==0 then(Array.get !state.currentRoom.doors 3)
+  else (false,1)
 
-let load_ennemie e =
-  Collision_S.register e;
-  Control_S.register e;
-  Draw_S.register e;
-  Move_S.register e
 
-let unload_ennemie e =
-  Collision_S.unregister e;
-  Control_S.unregister e;
-  Draw_S.unregister e;
-  Move_S.unregister e
 
 let update_obj () =
   let x = 55. in
@@ -278,17 +350,17 @@ let appenditem () =
     update_obj ();
     ()
 
-    let _appenditembyindex e =
-      let itempool = !state.itempool in
-      let obj_entity = !interface.obj_entity in
-      let player = get_player () in
-      let old_stats = Statistics.get player in
-      let item = (List.nth itempool e) in
-      set_itempool (List.filter (fun e -> e <> item) itempool);
-      set_obj (item::obj_entity);
-      Statistics.set player (Stats.addStat old_stats (Statistics.get item));
-      update_obj ();
-      ()
+let _appenditembyindex e =
+  let itempool = !state.itempool in
+  let obj_entity = !interface.obj_entity in
+  let player = get_player () in
+  let old_stats = Statistics.get player in
+  let item = (List.nth itempool e) in
+  set_itempool (List.filter (fun e -> e <> item) itempool);
+  set_obj (item::obj_entity);
+  Statistics.set player (Stats.addStat old_stats (Statistics.get item));
+  update_obj ();
+  ()
         
 let change_room e =
   let name = Name.get e in
@@ -304,6 +376,14 @@ let change_room e =
       end
     else ()
     ) room.ennemies;
+  List.iter (fun e -> unload_ennemie e) old_room.obstacles;
+  List.iter (fun e ->
+  if (Active.has_component e) then
+    begin      
+      if (Active.get e)then  load_ennemie e 
+    end
+  else ()
+  ) room.obstacles;
   change_door ()        
 
 let collision door e = 
@@ -312,37 +392,42 @@ let collision door e =
     change_room door;
     Position.set e (Teleport.get door);
   end
+  else if (String.compare name "spider") == 0 then
+    Wall.collision door e
   
-    let change_floor map = 
-      let floor = (get_state ()).floor in
-      let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
-      let itempool = !state.itempool in
-      let obj = get_obj ()in
-      if ((List.length itempool)>0) && ((List.length obj)<6) then begin appenditem (); end;
-      state := {!state with floor = floor+1;isPlaying = true; map = map;currentRoom=(Array.get map 0);};
-      Draw_S.register !state.currentRoom.id;
-      List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
-      Position.set player {x=400.;y=340.};
-      update_health ();  
-      update_count_f (); 
-      change_door ()
+let change_floor map = 
+  let floor = (get_state ()).floor in
+  let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
+  let itempool = !state.itempool in
+  let obj = get_obj ()in
+  if ((List.length itempool)>0) && ((List.length obj)<6) then begin appenditem (); end;
+  List.iter (fun e -> unload_ennemie e) !state.currentRoom.obstacles;
+  state := {!state with floor = floor+1;isPlaying = true; map = map;currentRoom=(Array.get map 0);};
+  Draw_S.register !state.currentRoom.id;
+  List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
+  List.iter (fun e -> load_ennemie e) !state.currentRoom.obstacles;
+  Position.set player {x=400.;y=340.};
+  update_health ();  
+  update_count_f (); 
+  change_door ()
 
 
-    let init pe1 map heart_img e_info_img f_info_img  itempool=
-      let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
-      let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
-      let e_info = Info.create 600. 25. "info_e" e_info_img "0" 35 35 40. 25. in
-      let f_info = Info.create 700. 20. "info_f" f_info_img "0" 45 45 50. 30. in
-      Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
-      state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit; itempool = itempool;};
-      Draw_S.register !state.currentRoom.id;
-      List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
-      player_state := {health =3};
-      interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
-      update_health ();
-      update_count_e ();
-      update_count_f ();
-      change_door ()
+let init pe1 map heart_img e_info_img f_info_img  itempool=
+  let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
+  let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
+  let e_info = Info.create 600. 25. "info_e" e_info_img "0" 35 35 40. 25. in
+  let f_info = Info.create 700. 20. "info_f" f_info_img "0" 45 45 50. 30. in
+  Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
+  state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit; itempool = itempool;};
+  Draw_S.register !state.currentRoom.id;
+  List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
+  List.iter (fun e -> load_ennemie e) !state.currentRoom.obstacles;
+  player_state := {health =3};
+  interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
+  update_health ();
+  update_count_e ();
+  update_count_f ();
+  change_door ()
 
     
 

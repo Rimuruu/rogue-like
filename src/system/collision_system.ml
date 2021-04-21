@@ -11,16 +11,20 @@ let update _dt el =
       *)
       if j > i then begin
         (* les composants du rectangle r1 *)
-        let pos1 = Position.get e1 in
         let box1 = Box.get e1 in
+        let boxC1 = BoxCollider.get e1 in
+        let pos1 = Rect.margin box1 boxC1 (Position.get e1) in
+        
         (* les composants du rectangle r2 *)
-        let pos2 = Position.get e2 in
         let box2 = Box.get e2 in
+        let boxC2 = BoxCollider.get e2 in
+        let pos2 = Rect.margin box2 boxC2 (Position.get e2) in
+        
         (* les vitesses *)
         let v1 = Velocity.get e1 in
         let v2 = Velocity.get e2 in
         (* [1] la soustraction de Minkowski *)
-        let s_pos, s_rect = Rect.mdiff pos2 box2 pos1 box1 in
+        let s_pos, s_rect = Rect.mdiff pos2 boxC2 pos1 boxC1 in
         (* [2] si intersection et un des objets et mobile, les objets rebondissent *)
         if Rect.has_origin s_pos s_rect &&
           not (Vector.is_zero v1 && Vector.is_zero v2)

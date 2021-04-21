@@ -1,6 +1,8 @@
 open Ecs
 
-val create : float -> float -> Entity.t
+val destruction : Entity.t -> unit
+
+val create : float -> float -> Gfx.image  -> Entity.t
 
 val reset : Entity.t -> float -> float -> unit
 

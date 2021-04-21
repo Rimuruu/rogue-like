@@ -3,7 +3,7 @@ open Ecs
 val create : string -> float -> float -> Gfx.image -> Entity.t
 val reset : Entity.t -> float -> float -> unit
 
-val shot : Gfx.image-> Entity.t -> unit
+
 
 val move_up : Entity.t -> unit
 val move_down : Entity.t -> unit

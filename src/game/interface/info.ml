@@ -8,6 +8,7 @@ let create x y name img text sizex sizey mx my=
 let e = Entity.create () in
   Position.set e { x = x; y = y};
   Box.set e { width = sizex; height = sizey};
+  BoxCollider.set e { width = sizex; height = sizey};
   Velocity.set e Vector.zero;
   Name.set e name;
   Surface.set e (Texture.create_img img 40 40);

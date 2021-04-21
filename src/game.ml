@@ -14,6 +14,8 @@ let projectile_img = Gfx.load_image("src/img/projectilesheet.png")
 let item_img = Gfx.load_image("src/img/itemSheet.png")
 let e_info_img = Gfx.load_image("src/img/info_e.png")
 let f_info_img = Gfx.load_image("src/img/info_f.png")
+let spider_img = Gfx.load_image("src/img/spider.png")
+let web_img = Gfx.load_image("src/img/web.png")
 
 (* *)
 let init_game _dt = 
@@ -21,7 +23,6 @@ let init_game _dt =
   Gfx.debug (Format.asprintf " init");
   
   let player = Player.create "player" 400. 340. player_img in
-  let _testitem = Objet.create 10. 10. "test" item_img {strength = 1.; attackspeed = 1.0; movespeed = 1.0;} "test dummy" 0 0 in
   let itempool = [
     (Objet.create 10. 10. "Arc en cuivre" item_img {strength = 2.; attackspeed = 1.0; movespeed = 1.0;} "FOR+" 0 0);
     (Objet.create 10. 10. "Arc en argent" item_img {strength = 3.; attackspeed = 1.0; movespeed = 1.0;} "FOR++" 40 0);
@@ -41,13 +42,13 @@ let init_game _dt =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop "down" player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop "left" player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop "right" player);
-  Input_handler.register_command (KeyDown " ") (fun () -> Player.shot projectile_img player);
+  Input_handler.register_command (KeyDown " ") (fun () ->  Game_state.shot projectile_img player);
   Input_handler.set_key "up" false;
   Input_handler.set_key "down" false;
   Input_handler.set_key "left" false;
   Input_handler.set_key "right" false;
   Game_state.set_floor 1;
-  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img in
+  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img spider_img web_img in
   (*Murs du haut*)
   Game_state.enable_wall (Wall.create 40. 120. 360 40);
   Game_state.enable_wall (Wall.create 440. 120. 320 40);
@@ -73,7 +74,7 @@ let play_game dt =
   while !frameEnd < frameDelay do frameEnd := (Sys.time ()) -. !frameStart; done;
   frameTimer := !frameTimer +. !frameEnd;
   incr frameCount;
-  if not(Game_state.check_ennemies ()) then begin  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img in Game_state.change_floor map; end;
+  if not(Game_state.check_ennemies ()) then begin  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img spider_img web_img in Game_state.change_floor map; end;
   if !frameTimer >= 1.0 then begin Gfx.debug (Format.asprintf "fps : %d" !frameCount); frameTimer := 0.;frameCount:=0; end;
   if (not(Game_state.get_status ())) then false
   else true
@@ -101,7 +102,9 @@ let load_graphics _dt =
   (Gfx.image_ready go_img)&&
   (Gfx.image_ready item_img)&&
   (Gfx.image_ready e_info_img)&&
-  (Gfx.image_ready f_info_img)
+  (Gfx.image_ready f_info_img)&&
+  (Gfx.image_ready spider_img)&&
+  (Gfx.image_ready web_img)
   ) then false
   else true
 

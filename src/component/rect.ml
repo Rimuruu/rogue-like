@@ -9,6 +9,12 @@ let bottom_right v b = { x = v.x +. float b.width;
                          y = v.y +. float b.height;
                        }
 
+
+let margin b1 b2 p =
+  let x = (((float_of_int b1.width) -. (float_of_int b2.width))/. 2.) +. p.x in
+  let y = (((float_of_int b1.height) -. (float_of_int b2.height))/. 2.) +. p.y in
+  { x = x ; y = y}
+
 let center v b = { 
   x = v.x +. 0.5 *. float b.width;
   y = v.y +. 0.5 *. float b.height;

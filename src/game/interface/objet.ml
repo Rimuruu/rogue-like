@@ -9,6 +9,7 @@ let create x y name img stat text imgx imgy=
 let e = Entity.create () in
   Position.set e { x = x; y = y};
   Box.set e { width = 30; height = 30};
+
   Velocity.set e Vector.zero;
   Name.set e name;
   Surface.set e (Texture.create_img_scale img 40 40 imgx imgy);
