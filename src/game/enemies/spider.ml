@@ -3,10 +3,10 @@ open System_defs
 open Ecs
 
 
-let create posX posY img =
+let create posX posY img lvl=
   Random.self_init ();
-  let velX = (Random.int 100)+50 in
-  let velY = (Random.int 100)+50 in
+  let velX = (Random.int 50)+100 in
+  let velY = (Random.int 50)+100 in
   let e = Entity.create () in
   let anim = Texture.create_animation img 9 1 40 40 40 40 in
   Position.set e { x = posX; y = posY};
@@ -18,7 +18,7 @@ let create posX posY img =
   Surface.set e anim;
   Texture.create_idle "front_walk" (0,8) anim;
   Priority.set e 2;
-  Health.set e 1;
+  Health.set e (1+((lvl-1) mod 3));
   Active.set e true;
   
   

@@ -214,6 +214,22 @@ let collisionMine e1 e2 =
         end;
       end
 
+  let collisionFireball e1 e2 =
+    let name = Name.get e2 in
+      if (String.compare name "player") == 0 then begin
+        let vf = InvunerableFrame.get e2 in
+        if vf == 0 then begin
+          !player_state.health <- !player_state.health-1;
+          update_health ();
+          InvunerableFrame.set e2 65;
+          Fireball.delete e1;
+        end;
+        
+      end
+      else if ((String.compare name "wall") == 0 ) ||((String.compare name "bottom") == 0 )||((String.compare name "top") == 0 )||((String.compare name "right") == 0 )||((String.compare name "left") == 0 ) then begin      
+          Fireball.delete e1;
+        end
+
 let spawnMine img e = 
   let pos = Position.get e in
   Gfx.debug (Format.asprintf "spawnmine");
@@ -221,6 +237,23 @@ let spawnMine img e =
   CollisionResolver.set mine collisionMine;
   load_ennemie mine;
   add_obstacle mine;
+  ()
+
+
+let aimPlayer pos1 pos2 = 
+  let diff = Vector.sub pos2 pos1 in
+  (Vector.mult 1.0 diff)
+
+let shotFireball img e = 
+  let pos = Position.get e in
+  let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
+  let pos2 = Position.get player in
+  let vel = aimPlayer pos pos2 in
+  Gfx.debug (Format.asprintf "fireball");
+  let fb = Fireball.create "fireball" pos.x pos.y img vel.x vel.y 1. in
+  CollisionResolver.set fb collisionFireball;
+  load_ennemie fb;
+  add_obstacle fb;
   ()
 
 let collisionEnnemy _ennemy e =
@@ -235,13 +268,14 @@ let collisionEnnemy _ennemy e =
     end
 
 
-let random_ennemy x y gbl_img spider_img mine_img=
+let random_ennemy x y images=
   Random.self_init ();
-  let r = random_between 0 2 in
+  let r = random_between 0 3 in
   match r with 
-  | 0 -> Gobelin.create x y gbl_img 
-  | 1 -> let spider = Spider.create x y spider_img in  Cpt.set spider ({cpt = Sys.time (); action = (spawnMine mine_img) }); spider
-  | _ -> Gobelin.create x y gbl_img 
+  | 0 -> Gobelin.create x y (Hashtbl.find images "gobelin_img") (!state.floor)
+  | 1 -> let spider = Spider.create x y (Hashtbl.find images "spider_img") (!state.floor) in  Cpt.set spider ({cpt = Sys.time (); action = (spawnMine (Hashtbl.find images "web_img")) }); spider
+  | 2 -> let skeleton = Skeleton.create x y (Hashtbl.find images "skeleton_img") (!state.floor) in Cpt.set skeleton ({cpt = Sys.time (); action = (shotFireball (Hashtbl.find images "fireball_img")) }); skeleton
+  | _ -> Gobelin.create x y (Hashtbl.find images "gobelin_img") (!state.floor)
 
 let random_spawn () = 
   Random.self_init ();
@@ -253,8 +287,8 @@ let random_spawn () =
   | 3 -> ((random_between_float 80. 240.), (random_between_float 400. 540.))
   | _ -> ((random_between_float 80. 240.), (random_between_float 160. 280.))
 
-let generate_ennemies nb gbl_img spider_img mine_img= 
-  let rec aux  nb gbl_img spider_img mine_img= 
+let generate_ennemies nb images= 
+  let rec aux  nb images= 
     match nb with 
     0 -> []
     | _ ->
@@ -262,18 +296,18 @@ let generate_ennemies nb gbl_img spider_img mine_img=
       let x = fst spawn in
       let y = snd spawn in 
       Gfx.debug (Format.asprintf "x %f y %f" x y);
-      let e = random_ennemy x y gbl_img spider_img mine_img in
-      e::(aux (nb-1) gbl_img spider_img mine_img)
+      let e = random_ennemy x y images in
+      e::(aux (nb-1) images)
   in
-  aux nb gbl_img spider_img mine_img
+  aux nb images
 
   
-let generate_map d p n gbl_img spider_img mine_img=
+let generate_map d p n images=
 let map = List.init n (fun e -> 
   let entity = Map.create "map" 0. 80. p d 40 in
   let floor = (get_state ()).floor in
   let nbEnnemies = (random_between floor (floor+2)) in
-  let ennemies = generate_ennemies nbEnnemies gbl_img spider_img mine_img in
+  let ennemies = generate_ennemies nbEnnemies images in
   List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
   let obstacles = [] in
   List.iter (fun e -> CollisionResolver.set e collisionMine) obstacles;
@@ -412,18 +446,18 @@ let change_floor map =
   change_door ()
 
 
-let init pe1 map heart_img e_info_img f_info_img  itempool=
+let init pe1 map images itempool=
   let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
   let wallsInit = [|(Wall.create 40. 320. 40 40);(Wall.create 400. 120. 40 40);(Wall.create 720. 320. 40 40);(Wall.create 400. 560. 40 40)|] in
-  let e_info = Info.create 600. 25. "info_e" e_info_img "0" 35 35 40. 25. in
-  let f_info = Info.create 700. 20. "info_f" f_info_img "0" 45 45 50. 30. in
+  let e_info = Info.create 600. 25. "info_e" (Hashtbl.find images "e_info_img" ) "0" 35 35 40. 25. in
+  let f_info = Info.create 700. 20. "info_f" (Hashtbl.find images "f_info_img") "0" 45 45 50. 30. in
   Array.iter (fun e -> CollisionResolver.set e collision) doorsInit;
   state := {  floor = 1; map = map;currentRoom=(Array.get map 0);isPlaying = true; player = pe1;doors_entity = doorsInit;walls_entity = wallsInit; itempool = itempool;};
   Draw_S.register !state.currentRoom.id;
   List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
   List.iter (fun e -> load_ennemie e) !state.currentRoom.obstacles;
   player_state := {health =3};
-  interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. heart_img));background = (Background.create 0. 0.)};
+  interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. (Hashtbl.find images "heart_img")));background = (Background.create 0. 0.)};
   update_health ();
   update_count_e ();
   update_count_f ();

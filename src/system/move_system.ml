@@ -13,11 +13,13 @@ let move_to e1 e2 =
   let distY = posE1.y -. posE2.y in
   let _dist = Float.sqrt ((distX**2.) +. (distY**2.)) in
   let anim = Surface.get e1 in
+  let stats = Statistics.get e1 in
+  let speed = stats.movespeed in
   if (distX ** 2.) >= ((distY ** 2.)+.(10.**2.)) then 
-    if (distX >= 0.) then begin Velocity.set e1 { x = -50.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = -50.0; y = 0.0 }))then Texture.play_idle anim "left_walk" end
-    else  begin  Velocity.set e1 { x = 50.0; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = 50.0; y = 0.0 })) then Texture.play_idle anim "right_walk" end
-  else  if (distY >= 0.) then begin  Velocity.set e1 { x = 0.0; y = -50.0 }; if ( not(Vector.is_equal vecE1 { x = 0.0; y = -50.0 })) then Texture.play_idle anim "back_walk" end
-        else  begin Velocity.set e1 { x = 0.0; y = 50.0 }; if (not(Vector.is_equal vecE1 { x = 0.0; y = 50.0 })) then Texture.play_idle anim "front_walk" end
+    if (distX >= 0.) then begin Velocity.set e1 { x = -.speed; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = -.speed; y = 0.0 }))then Texture.play_idle anim "left_walk" end
+    else  begin  Velocity.set e1 { x = speed; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = speed; y = 0.0 })) then Texture.play_idle anim "right_walk" end
+  else  if (distY >= 0.) then begin  Velocity.set e1 { x = 0.0; y = -.speed }; if ( not(Vector.is_equal vecE1 { x = 0.0; y = -.speed })) then Texture.play_idle anim "back_walk" end
+        else  begin Velocity.set e1 { x = 0.0; y = speed }; if (not(Vector.is_equal vecE1 { x = 0.0; y = speed })) then Texture.play_idle anim "front_walk" end
         
 
   
@@ -26,7 +28,7 @@ let update dt el =
   let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
   time := dt;
   List.iter (fun e ->
-      if (String.compare (Name.get e) "ennemy")==0 then move_to e player;
+      if ((String.compare (Name.get e) "ennemy")==0) || ((String.compare (Name.get e) "skeleton")==0) then move_to e player;
       let pos = Position.get e in
       let speed = Vector.mult delta_t (Velocity.get e) in
       Position.set e ({ x = pos.x +. speed.x; y = pos.y +. speed.y })

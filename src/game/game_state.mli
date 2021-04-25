@@ -12,7 +12,7 @@ type room = {
 }
 
 
-val init : Entity.t -> room array -> Gfx.image -> Gfx.image ->  Gfx.image ->  Entity.t list -> unit
+val init : Entity.t -> room array -> (string, Gfx.image) Hashtbl.t ->  Entity.t list -> unit
 val get_player : unit -> Entity.t
 val get_status : unit -> bool
 val set_state : bool -> unit
@@ -27,6 +27,6 @@ val shot : Gfx.image-> Entity.t -> unit
 val spawnMine :  Gfx.image -> Entity.t -> unit
 
 val door_f  : int -> int
-val generate_map : int array array -> Gfx.color array -> int -> Gfx.image -> Gfx.image -> Gfx.image ->    room array
+val generate_map : int array array -> Gfx.color array -> int -> (string, Gfx.image) Hashtbl.t ->    room array
 val change_floor : room array -> unit
 

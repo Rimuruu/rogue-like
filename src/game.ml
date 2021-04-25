@@ -6,33 +6,25 @@ let frameCount = ref 0
 let frameTimer = ref 0.0
 let fps = 60.0
 let frameDelay = 1. /. fps
-let player_img = Gfx.load_image("src/img/charSheet.png")
-let gobelin_img = Gfx.load_image("src/img/gobelinSheet.png")
-let heart_img = Gfx.load_image("src/img/heart.png")
-let go_img = Gfx.load_image("src/img/GameOverScreen.png")
-let projectile_img = Gfx.load_image("src/img/projectilesheet.png")
-let item_img = Gfx.load_image("src/img/itemSheet.png")
-let e_info_img = Gfx.load_image("src/img/info_e.png")
-let f_info_img = Gfx.load_image("src/img/info_f.png")
-let spider_img = Gfx.load_image("src/img/spider.png")
-let web_img = Gfx.load_image("src/img/web.png")
+let images = Hashtbl.create 20
+
 
 (* *)
 let init_game _dt = 
   System.init_all ();
   Gfx.debug (Format.asprintf " init");
   
-  let player = Player.create "player" 400. 340. player_img in
+  let player = Player.create "player" 400. 340. (Hashtbl.find images "player_img") in
   let itempool = [
-    (Objet.create 10. 10. "Arc en cuivre" item_img {strength = 2.; attackspeed = 1.0; movespeed = 1.0;} "FOR+" 0 0);
-    (Objet.create 10. 10. "Arc en argent" item_img {strength = 3.; attackspeed = 1.0; movespeed = 1.0;} "FOR++" 40 0);
-    (Objet.create 10. 10. "Arc en or" item_img {strength = 4.; attackspeed = 1.0; movespeed = 1.0;} "FOR+++" 80 0);
-    (Objet.create 10. 10. "Carquois en cuivre" item_img {strength = 1.; attackspeed = 1.5; movespeed = 1.0;} "VA+" 120 0);
-    (Objet.create 10. 10. "Carquois en argent" item_img {strength = 1.; attackspeed = 2.0; movespeed = 1.0;} "VA++" 160 0);
-    (Objet.create 10. 10. "Carquois en or" item_img {strength = 1.; attackspeed = 3.0; movespeed = 1.0;} "VA+++" 200 0);
-    (Objet.create 10. 10. "Botte en cuivre" item_img {strength = 1.; attackspeed = 1.0; movespeed = 1.15;} "VIT+" 240 0);
-    (Objet.create 10. 10. "Botte en argent" item_img {strength = 1.; attackspeed = 1.0; movespeed = 1.30;} "VIT++" 280 0);
-    (Objet.create 10. 10. "Botte en or" item_img {strength = 1.; attackspeed = 1.0; movespeed = 1.45;} "VIT+++" 320 0)
+    (Objet.create 10. 10. "Arc en cuivre" (Hashtbl.find images "item_img") {strength = 2.; attackspeed = 1.0; movespeed = 1.0;} "FOR+" 0 0);
+    (Objet.create 10. 10. "Arc en argent" (Hashtbl.find images "item_img") {strength = 3.; attackspeed = 1.0; movespeed = 1.0;} "FOR++" 40 0);
+    (Objet.create 10. 10. "Arc en or" (Hashtbl.find images "item_img") {strength = 4.; attackspeed = 1.0; movespeed = 1.0;} "FOR+++" 80 0);
+    (Objet.create 10. 10. "Carquois en cuivre" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 1.5; movespeed = 1.0;} "VA+" 120 0);
+    (Objet.create 10. 10. "Carquois en argent" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 2.0; movespeed = 1.0;} "VA++" 160 0);
+    (Objet.create 10. 10. "Carquois en or" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 3.0; movespeed = 1.0;} "VA+++" 200 0);
+    (Objet.create 10. 10. "Botte en cuivre" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 1.0; movespeed = 1.15;} "VIT+" 240 0);
+    (Objet.create 10. 10. "Botte en argent" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 1.0; movespeed = 1.30;} "VIT++" 280 0);
+    (Objet.create 10. 10. "Botte en or" (Hashtbl.find images "item_img") {strength = 1.; attackspeed = 1.0; movespeed = 1.45;} "VIT+++" 320 0)
   ]in
   Input_handler.register_command (KeyDown "z") (fun () -> Player.move_up player);
   Input_handler.register_command (KeyDown "s") (fun () -> Player.move_down player);
@@ -42,13 +34,13 @@ let init_game _dt =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop "down" player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop "left" player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop "right" player);
-  Input_handler.register_command (KeyDown " ") (fun () ->  Game_state.shot projectile_img player);
+  Input_handler.register_command (KeyDown " ") (fun () ->  Game_state.shot (Hashtbl.find images "projectile_img") player);
   Input_handler.set_key "up" false;
   Input_handler.set_key "down" false;
   Input_handler.set_key "left" false;
   Input_handler.set_key "right" false;
   Game_state.set_floor 1;
-  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img spider_img web_img in
+  let map = Game_state.generate_map Global.map Global.palette 5 images in
   (*Murs du haut*)
   Game_state.enable_wall (Wall.create 40. 120. 360 40);
   Game_state.enable_wall (Wall.create 440. 120. 320 40);
@@ -62,7 +54,7 @@ let init_game _dt =
   Game_state.enable_wall (Wall.create 720. 160. 40 160);
   Game_state.enable_wall (Wall.create 720. 360. 40 200);
   
-  Game_state.init player map heart_img e_info_img f_info_img itempool;
+  Game_state.init player map images itempool;
   false
 
 let play_game dt =
@@ -74,7 +66,7 @@ let play_game dt =
   while !frameEnd < frameDelay do frameEnd := (Sys.time ()) -. !frameStart; done;
   frameTimer := !frameTimer +. !frameEnd;
   incr frameCount;
-  if not(Game_state.check_ennemies ()) then begin  let map = Game_state.generate_map Global.map Global.palette 5 gobelin_img spider_img web_img in Game_state.change_floor map; end;
+  if not(Game_state.check_ennemies ()) then begin  let map = Game_state.generate_map Global.map Global.palette 5 images in Game_state.change_floor map; end;
   if !frameTimer >= 1.0 then begin Gfx.debug (Format.asprintf "fps : %d" !frameCount); frameTimer := 0.;frameCount:=0; end;
   if (not(Game_state.get_status ())) then false
   else true
@@ -83,7 +75,7 @@ let end_game _dt =
 System.reset_all ();
 Input_handler.reset_all ();
 Input_handler.register_command (KeyUp "r") (fun () -> Game_state.set_state true);
-let _go_entity = GoScreen.create 0. 0. go_img in
+let _go_entity = GoScreen.create 0. 0. (Hashtbl.find images "go_img") in
 false 
  
 let reset_game dt =
@@ -93,19 +85,11 @@ System.update_all dt;
 if (Game_state.get_status ()) then begin System.reset_all (); reset_all ();Input_handler.reset_all (); false end
 else true 
  
+let img_ready () = Hashtbl.fold (fun _ i acc -> (acc)&&(Gfx.image_ready i)) images true
+
 
 let load_graphics _dt = 
-  if ((Gfx.image_ready player_img)&&
-    (Gfx.image_ready heart_img)&&
-  (Gfx.image_ready gobelin_img)&&
-  (Gfx.image_ready projectile_img)&&
-  (Gfx.image_ready go_img)&&
-  (Gfx.image_ready item_img)&&
-  (Gfx.image_ready e_info_img)&&
-  (Gfx.image_ready f_info_img)&&
-  (Gfx.image_ready spider_img)&&
-  (Gfx.image_ready web_img)
-  ) then false
+  if (img_ready ()) then false
   else true
 
 let chain_functions f_list = 
@@ -121,7 +105,19 @@ let chain_functions f_list =
               end
 
 let run () =  
-  let m = chain_functions [load_graphics;init_game;play_game;end_game;reset_game]in
+  Hashtbl.add images "player_img" (Gfx.load_image ("src/img/charSheet.png"));
+  Hashtbl.add images "gobelin_img" (Gfx.load_image ("src/img/gobelinSheet.png"));
+  Hashtbl.add images "heart_img" (Gfx.load_image ("src/img/heart.png"));
+  Hashtbl.add images "go_img" (Gfx.load_image ("src/img/GameOverScreen.png"));
+  Hashtbl.add images "projectile_img" (Gfx.load_image ("src/img/projectilesheet.png"));
+  Hashtbl.add images "item_img" (Gfx.load_image ("src/img/itemSheet.png"));
+  Hashtbl.add images "e_info_img" (Gfx.load_image ("src/img/info_e.png"));
+  Hashtbl.add images "f_info_img" (Gfx.load_image ("src/img/info_f.png"));
+  Hashtbl.add images "spider_img" (Gfx.load_image ("src/img/spider.png"));
+  Hashtbl.add images "web_img" (Gfx.load_image ("src/img/web.png"));
+  Hashtbl.add images "skeleton_img" (Gfx.load_image ("src/img/skeleton-Sheet.png"));
+  Hashtbl.add images "fireball_img" (Gfx.load_image ("src/img/fireball-Sheet.png"));
+  let m = chain_functions [load_graphics;init_game;play_game;end_game;reset_game] in
   Gfx.main_loop m
 
                

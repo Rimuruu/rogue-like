@@ -10,7 +10,15 @@ let update _dt el =
       end
       else if (String.compare name "spider") == 0 then begin
         let cpt = Cpt.get e in
-        if ((Sys.time ())-. cpt.cpt )> 5. then begin cpt.action e; Count.set_cpt  cpt (Sys.time ()) end 
+        if ((Sys.time ())-. cpt.cpt )> 1. then begin 
+        cpt.action e; 
+        Count.set_cpt  cpt (Sys.time ());
+        Random.self_init ();
+         end 
+      end
+      else if (String.compare name "skeleton") == 0 then begin
+        let cpt = Cpt.get e in
+        if ((Sys.time ())-. cpt.cpt )> 1.5 then begin cpt.action e; Count.set_cpt  cpt (Sys.time ()) end 
       end;
     
     ) el
