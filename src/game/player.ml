@@ -92,7 +92,6 @@ let stop key e =
   let stats = Statistics.get e in
   Input_handler.set_key key false;
   let nextKey,value = Input_handler.get_active_key ()in
-  Gfx.debug (Format.asprintf "nextKey %s value %b"nextKey value);
   if (String.compare key "down")==0 then begin Texture.play_idle anim "front";Orientation.set e {x = 0.; y = 1.}; end;
   if (String.compare key "up")==0 then begin Texture.play_idle anim "back";Orientation.set e {x = 0.; y = -1.}; end;
   if (String.compare key "right")==0 then begin Texture.play_idle anim "right";Orientation.set e {x = 1.; y = 0.}; end;

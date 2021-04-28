@@ -74,6 +74,7 @@ let get_player () = !state.player
 let get_status ()= !state.isPlaying
 let get_state () = !state
 let get_obj () = !interface.obj_entity
+let get_floor () = !state.floor
 
 let load_ennemie e =
   Collision_S.register e;
@@ -187,17 +188,22 @@ let path m =
   in
   path_aux (List.tl m) (List.hd m) 
 
+let spawnHeart img x y =
+    let cons = Consumable.create x y img in
+    add_obstacle cons;
+    load_ennemie cons;
+    ()
 
-let shot projectile_img e =
+let shot heart_img projectile_img e =
   let pos = Position.get e in
   let ori = Orientation.get e in
   let stats = Statistics.get e in
-  if (Sys.time () -. !cpt >= 1.0) then
+  if (Sys.time () -. !cpt >= 0.75) then
   match ori.x,ori.y with
-  | _,1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "down_shot" stats.strength  in cpt:=Sys.time () ;add_obstacle projectile; () end
-  | _,-1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "up_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile; () end
-  | 1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "right_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile; () end
-  | -1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "left_shot" stats.strength in cpt:=Sys.time () ;add_obstacle projectile;  () end
+  | _,1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "down_shot" stats.strength(spawnHeart heart_img)  in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | _,-1. -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "up_shot" stats.strength (spawnHeart heart_img) in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | 1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "right_shot" stats.strength (spawnHeart heart_img) in cpt:=Sys.time () ;add_obstacle projectile; () end
+  | -1.,_ -> begin let projectile = Projectile.create "projectile" (pos.x+.10.) (pos.y+.10.) projectile_img (ori.x*.(stats.attackspeed)) (ori.y*.(stats.attackspeed)) "left_shot" stats.strength (spawnHeart heart_img) in cpt:=Sys.time () ;add_obstacle projectile;  () end
   | _,_ ->  cpt:=Sys.time () ; () 
   else ()
 
@@ -232,7 +238,6 @@ let collisionMine e1 e2 =
 
 let spawnMine img e = 
   let pos = Position.get e in
-  Gfx.debug (Format.asprintf "spawnmine");
   let mine = Mine.create pos.x pos.y img in
   CollisionResolver.set mine collisionMine;
   load_ennemie mine;
@@ -242,14 +247,16 @@ let spawnMine img e =
 
 let aimPlayer pos1 pos2 = 
   let diff = Vector.sub pos2 pos1 in
-  (Vector.mult 1.0 diff)
+  (Vector.mult 200. (Vector.normalize diff))
+
+
 
 let shotFireball img e = 
   let pos = Position.get e in
   let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in
   let pos2 = Position.get player in
   let vel = aimPlayer pos pos2 in
-  Gfx.debug (Format.asprintf "fireball");
+
   let fb = Fireball.create "fireball" pos.x pos.y img vel.x vel.y 1. in
   CollisionResolver.set fb collisionFireball;
   load_ennemie fb;
@@ -258,6 +265,7 @@ let shotFireball img e =
 
 let collisionEnnemy _ennemy e =
   let name = Name.get e in
+ 
     if (String.compare name "player") == 0 then begin
       let vf = InvunerableFrame.get e in
       if vf == 0 then begin
@@ -295,7 +303,6 @@ let generate_ennemies nb images=
       let spawn = random_spawn ()  in
       let x = fst spawn in
       let y = snd spawn in 
-      Gfx.debug (Format.asprintf "x %f y %f" x y);
       let e = random_ennemy x y images in
       e::(aux (nb-1) images)
   in
@@ -361,7 +368,6 @@ let update_obj () =
   let x = 55. in
   let y = 17.5 in
   List.iteri (fun i e ->
-    Gfx.debug (Format.asprintf "update %d " i);
     Draw_S.register e;
     Objet.changePos e (120.+.(x*.(float_of_int i))) y;
     ) !interface.obj_entity;
@@ -375,26 +381,14 @@ let appenditem () =
     let old_stats = Statistics.get player in
     Random.self_init ();
     let r = random_between 0 (List.length itempool)in
-    Gfx.debug (Format.asprintf "length %d" (List.length itempool));
     let item = (List.nth itempool r) in
-    Gfx.debug (Format.asprintf "item %d r %d" r r);
     set_itempool (List.filter (fun e -> e <> item) itempool);
     set_obj (item::obj_entity);
     Statistics.set player (Stats.addStat old_stats (Statistics.get item));
     update_obj ();
     ()
 
-let _appenditembyindex e =
-  let itempool = !state.itempool in
-  let obj_entity = !interface.obj_entity in
-  let player = get_player () in
-  let old_stats = Statistics.get player in
-  let item = (List.nth itempool e) in
-  set_itempool (List.filter (fun e -> e <> item) itempool);
-  set_obj (item::obj_entity);
-  Statistics.set player (Stats.addStat old_stats (Statistics.get item));
-  update_obj ();
-  ()
+
         
 let change_room e =
   let name = Name.get e in
@@ -428,6 +422,21 @@ let collision door e =
   end
   else if (String.compare name "spider") == 0 then
     Wall.collision door e
+
+
+
+let loot _player obj = 
+  let name = Name.get obj in
+  if (String.compare name "heart") == 0 then begin
+      if !player_state.health < 3 then begin
+        !player_state.health <- !player_state.health +1;
+        update_health ();
+        Consumable.dead obj
+      end
+  end    
+
+  
+
   
 let change_floor map = 
   let floor = (get_state ()).floor in
@@ -445,6 +454,9 @@ let change_floor map =
   update_count_f (); 
   change_door ()
 
+  
+
+
 
 let init pe1 map images itempool=
   let doorsInit = [|(Door.create "left" 40. 320. 660. 320.);(Door.create "top" 400. 120. 400. 500.);(Door.create "right" 720. 320. 100. 320.);(Door.create "bottom" 400. 560. 400. 180.) |]in
@@ -457,11 +469,13 @@ let init pe1 map images itempool=
   List.iter (fun e -> load_ennemie e) !state.currentRoom.ennemies;
   List.iter (fun e -> load_ennemie e) !state.currentRoom.obstacles;
   player_state := {health =3};
+  CollisionResolver.set pe1 loot;
   interface := {!interface with f_info = f_info; e_info = e_info; obj_entity =[];  vie_entity = (Array.init 5 (fun e -> Heart.create ((20.*.(float_of_int e))+.20.) 20. (Hashtbl.find images "heart_img")));background = (Background.create 0. 0.)};
   update_health ();
   update_count_e ();
   update_count_f ();
-  change_door ()
+  change_door ();
+  () 
 
     
 

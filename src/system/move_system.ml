@@ -1,25 +1,51 @@
 open Component_defs
+open Vector
+
 
 let init () = ()
 
 let time = ref 0.0
 
+let absF f = if f > 0.0 then f else (f *. -1.0)
+
+let notNul f = if f > 0.0 then  1. else if f < 0.0 then -.1. else 0. 
+
+let maxF a b = if a >= b then a else b
 
 let move_to e1 e2 = 
   let posE1 = Position.get e1 in
   let posE2 = Position.get e2 in
   let vecE1 = Velocity.get e1 in
-  let distX = posE1.x -. posE2.x in
-  let distY = posE1.y -. posE2.y in
+  let distX =   posE2.x -. posE1.x in
+  let distY =   posE2.y -. posE1.y in
   let _dist = Float.sqrt ((distX**2.) +. (distY**2.)) in
   let anim = Surface.get e1 in
   let stats = Statistics.get e1 in
   let speed = stats.movespeed in
-  if (distX ** 2.) >= ((distY ** 2.)+.(10.**2.)) then 
-    if (distX >= 0.) then begin Velocity.set e1 { x = -.speed; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = -.speed; y = 0.0 }))then Texture.play_idle anim "left_walk" end
-    else  begin  Velocity.set e1 { x = speed; y = 0.0 }; if (not(Vector.is_equal vecE1 { x = speed; y = 0.0 })) then Texture.play_idle anim "right_walk" end
-  else  if (distY >= 0.) then begin  Velocity.set e1 { x = 0.0; y = -.speed }; if ( not(Vector.is_equal vecE1 { x = 0.0; y = -.speed })) then Texture.play_idle anim "back_walk" end
-        else  begin Velocity.set e1 { x = 0.0; y = speed }; if (not(Vector.is_equal vecE1 { x = 0.0; y = speed })) then Texture.play_idle anim "front_walk" end
+  let _max distX distY = if (absF distX) > (absF distY) then {x = (notNul distX) ; y = 0.} else  {x = 0. ; y = (notNul distY)} in
+ (* Gfx.debug (Format.asprintf "diffx %f"  ((absF distX) -. (absF distY)));
+  Gfx.debug (Format.asprintf "diffy %f"  ((absF distY) -. (absF distX)));*)
+  if (((absF distX) -. (absF distY)) > 20.)  then 
+      Velocity.set e1 (Vector.mult speed {x = (notNul distX) ; y = 0.})
+  else if (((absF distY) -. (absF distX)) > 20.) then  Velocity.set e1 (Vector.mult speed {x = 0.0 ; y = (notNul distY)});
+  
+
+
+  let newV = Velocity.get e1 in
+  if not(Vector.is_equal vecE1 newV) then begin
+    if ( (Vector.is_equal newV { x = -.speed; y = 0.0 }))then Texture.play_idle anim "left_walk" 
+    else if ((Vector.is_equal newV { x = speed; y = 0.0 }))then Texture.play_idle anim "right_walk" 
+    else if ((Vector.is_equal newV { x = 0.0; y = -.speed }))then Texture.play_idle anim "back_walk" 
+    else if ((Vector.is_equal newV { x = 0.0 ; y = speed }))then Texture.play_idle anim "front_walk" 
+  end
+
+
+
+
+
+
+
+        
         
 
   

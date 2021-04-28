@@ -12,7 +12,7 @@ let images = Hashtbl.create 20
 (* *)
 let init_game _dt = 
   System.init_all ();
-  Gfx.debug (Format.asprintf " init");
+
   
   let player = Player.create "player" 400. 340. (Hashtbl.find images "player_img") in
   let itempool = [
@@ -34,7 +34,7 @@ let init_game _dt =
   Input_handler.register_command (KeyUp "s") (fun () -> Player.stop "down" player);
   Input_handler.register_command (KeyUp "q") (fun () -> Player.stop "left" player);
   Input_handler.register_command (KeyUp "d") (fun () -> Player.stop "right" player);
-  Input_handler.register_command (KeyDown " ") (fun () ->  Game_state.shot (Hashtbl.find images "projectile_img") player);
+  Input_handler.register_command (KeyDown " ") (fun () ->  Game_state.shot (Hashtbl.find images "heart_img") (Hashtbl.find images "projectile_img") player);
   Input_handler.set_key "up" false;
   Input_handler.set_key "down" false;
   Input_handler.set_key "left" false;
@@ -57,6 +57,17 @@ let init_game _dt =
   Game_state.init player map images itempool;
   false
 
+
+let go_screen () = 
+  let ctx = Draw_system.ctx in
+  let r = Option.get !ctx in
+  Gfx.clear_rect r 0 0 800 640;
+  Gfx.fill_rect r (0) (0) 800 640 (Gfx.color 0 0 0 255);
+  Gfx.draw_text r "Game Over" 250 300 "150px Verdana" (Gfx.color 255 255 255 255) 350. 1.;
+  Gfx.draw_text r ("Score : "^(string_of_int (Game_state.get_floor ())) ) 350 350 "24px Verdana" (Gfx.color 255 255 255 255) 250. 1.;
+  Gfx.draw_text r "Appuyez sur R pour recommencer" 285 385 "24px Verdana" (Gfx.color 255 255 255 255) 250. 1.
+
+
 let play_game dt =
   (* Update all systems *)
   frameStart := Sys.time ();
@@ -74,14 +85,14 @@ let play_game dt =
 let end_game _dt =
 System.reset_all ();
 Input_handler.reset_all ();
+
 Input_handler.register_command (KeyUp "r") (fun () -> Game_state.set_state true);
-let _go_entity = GoScreen.create 0. 0. (Hashtbl.find images "go_img") in
+go_screen ();
 false 
  
 let reset_game dt =
-  
-Gfx.debug (Format.asprintf "reset");
 System.update_all dt;
+go_screen ();
 if (Game_state.get_status ()) then begin System.reset_all (); reset_all ();Input_handler.reset_all (); false end
 else true 
  
@@ -108,7 +119,6 @@ let run () =
   Hashtbl.add images "player_img" (Gfx.load_image ("src/img/charSheet.png"));
   Hashtbl.add images "gobelin_img" (Gfx.load_image ("src/img/gobelinSheet.png"));
   Hashtbl.add images "heart_img" (Gfx.load_image ("src/img/heart.png"));
-  Hashtbl.add images "go_img" (Gfx.load_image ("src/img/GameOverScreen.png"));
   Hashtbl.add images "projectile_img" (Gfx.load_image ("src/img/projectilesheet.png"));
   Hashtbl.add images "item_img" (Gfx.load_image ("src/img/itemSheet.png"));
   Hashtbl.add images "e_info_img" (Gfx.load_image ("src/img/info_e.png"));

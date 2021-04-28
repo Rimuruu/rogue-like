@@ -2,7 +2,10 @@ open Component_defs
 open Ecs
 open System_defs
 
-let dead e =
+let dead e spawnHeart=
+  let pos = Position.get e in
+  Random.self_init ();
+  if (Random.int 5) == 0 then spawnHeart pos.x pos.y;
   Collision_S.unregister e;
   Control_S.unregister e;
   Draw_S.unregister e; 
@@ -10,10 +13,10 @@ let dead e =
   Logic_S.unregister e;
   Active.set e false
 
-let hit e degat= 
+let hit e degat spawnHeart= 
   let hp = Health.get e in
   Health.set e (hp-(int_of_float degat));
-  if (hp-(int_of_float degat)) <= 0 then dead e
+  if (hp-(int_of_float degat)) <= 0 then dead e spawnHeart
 
 let create posX posY velX velY img= (*On choisit la direction qu'il prend quand il est créé*)
   let e = Entity.create () in

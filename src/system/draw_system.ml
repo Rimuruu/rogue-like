@@ -1,5 +1,7 @@
 open Component_defs
 
+
+
 let ctx = ref None
 let init () =
   let _, c = Gfx.create "canvas"  in
@@ -7,7 +9,6 @@ let init () =
 
 let cpt = ref 0.0
 let time = ref 0.0
-  
 
 let update dt el =
 

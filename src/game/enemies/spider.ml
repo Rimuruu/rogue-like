@@ -5,8 +5,8 @@ open Ecs
 
 let create posX posY img lvl=
   Random.self_init ();
-  let velX = (Random.int 50)+100 in
-  let velY = (Random.int 50)+100 in
+  let velX = (Random.int 75)+100 in
+  let velY = (Random.int 75)+100 in
   let e = Entity.create () in
   let anim = Texture.create_animation img 9 1 40 40 40 40 in
   Position.set e { x = posX; y = posY};

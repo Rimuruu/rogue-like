@@ -21,7 +21,7 @@ let create posX posY img lvl =
   Priority.set e 2;
   Health.set e (2+(lvl mod 3));
   Active.set e true;
-  Statistics.set e {strength = 0.0; attackspeed = 0.0; movespeed = 50.0;};
+  Statistics.set e {strength = 0.0; attackspeed = 0.0; movespeed = 75.0;};
 
   (* systems *)
   Cleaning_S.register e;
