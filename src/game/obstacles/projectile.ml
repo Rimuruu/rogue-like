@@ -33,7 +33,7 @@ let create name x y img velX velY idle degat spawnHeart=
   Velocity.set e { x = velX; y = velY};
   Mass.set e infinity;
   Box.set e {width = 20; height=20 };
-  BoxCollider.set e {width = 20; height=20 };
+  BoxCollider.set e {width = 20; height=5 };
   Name.set e name;
   Surface.set e anim;
   Texture.create_idle "right_shot" (0,3) anim;
