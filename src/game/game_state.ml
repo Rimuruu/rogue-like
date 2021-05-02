@@ -104,9 +104,11 @@ let active_length l =
   in
   aux l 0
 
+
 let check_ennemies () = Array.fold_left (fun acc e -> if (active_length e.ennemies) > 0 then true else acc) false !state.map
 let count_ennemies () = Array.fold_left (fun acc e -> (active_length e.ennemies+acc)) 0 !state.map
 
+(*Lorsque l'on ajoute un prjectile ou un piège *)
 let add_obstacle e = 
   let room = !state.currentRoom in
   let update = {room with obstacles=(e::(room.obstacles));}in
@@ -137,23 +139,26 @@ let enable_heart e =
   Draw_S.register e;
   ()
 
-
+(* Mise à jour des points de vie sur l'interface*)
 let update_health () = 
   Array.iteri (fun i e -> if (i > (!player_state.health-1)) then disable_heart e else enable_heart e) !interface.vie_entity;
   if !player_state.health == 0 then !state.isPlaying <- false
 
+(* Mise à jour du nombre d'ennemie en vie sur l'interface*)
 let update_count_e () = 
     let c = count_ennemies () in
     let info = !interface.e_info in
     Info.changeText info (string_of_int c);
     ()
 
+(* Mise à jour du numéro de l'étage sur l'interface*)
 let update_count_f () = 
     let f = !state.floor in
     let info = !interface.f_info in
     Info.changeText info (string_of_int f);
     ()
 
+(* Renvoie l'a porte opposé à la porte n. (0 droite,1 haut,2 gauche, 3 bas) *)
 let door_f n =
   match n with 
   0 -> 2
@@ -162,6 +167,7 @@ let door_f n =
   |3 -> 1
   |_ -> -1
 
+(*Parmis les portes disponibles, on en prend une aléatoirement*)
 let random_door room =
   Random.self_init ();
   let list = ref []in
@@ -171,6 +177,7 @@ let random_door room =
      done;
     List.nth !list (Random.int (List.length !list))
 
+(* On génére la map, le chemin est linéaire mais les portes sont aléatoire*)
 let path m = 
   let rec path_aux map room =
     let door = random_door room in
@@ -187,6 +194,7 @@ let path m =
 
   in
   path_aux (List.tl m) (List.hd m) 
+
 
 let spawnHeart img x y =
     let cons = Consumable.create x y img in
@@ -244,7 +252,7 @@ let spawnMine img e =
   add_obstacle mine;
   ()
 
-
+(*Vecteur en direction du joueur on normalise sinon la vitesse dépend de la distance entre l'ennemie et le joueur*)
 let aimPlayer pos1 pos2 = 
   let diff = Vector.sub pos2 pos1 in
   (Vector.mult 200. (Vector.normalize diff))
@@ -285,6 +293,8 @@ let random_ennemy x y images=
   | 2 -> let skeleton = Skeleton.create x y (Hashtbl.find images "skeleton_img") (!state.floor) in Cpt.set skeleton ({cpt = Sys.time (); action = (shotFireball (Hashtbl.find images "fireball_img")) }); skeleton
   | _ -> Gobelin.create x y (Hashtbl.find images "gobelin_img") (!state.floor)
 
+
+(*Les ennemies spawn loin du milieu et des portes *)
 let random_spawn () = 
   Random.self_init ();
   let r = random_between 0 4 in
@@ -308,17 +318,17 @@ let generate_ennemies nb images=
   in
   aux nb images
 
-  
-let generate_map d p n images=
+(* Génére une map de n salles*)
+let generate_map a p n images=
 let map = List.init n (fun e -> 
-  let entity = Map.create "map" 0. 80. p d 40 in
+  let entity = Map.create "map" 0. 80. p a 40 in
   let floor = (get_state ()).floor in
   let nbEnnemies = (random_between floor (floor+2)) in
   let ennemies = generate_ennemies nbEnnemies images in
   List.iter (fun e -> CollisionResolver.set e collisionEnnemy) ennemies;
   let obstacles = [] in
   List.iter (fun e -> CollisionResolver.set e collisionMine) obstacles;
-  {id=entity;ennemies=ennemies;obstacles=obstacles;index=e;value=d;doors=(Array.init 4 (fun _e -> (false,-1)))} 
+  {id=entity;ennemies=ennemies;obstacles=obstacles;index=e;value=a;doors=(Array.init 4 (fun _e -> (false,-1)))} 
   )in
   Array.of_list (path map)
   
@@ -340,6 +350,7 @@ let disable_wall e =
   Collision_S.unregister e;
   ()
 
+(*Change les portes de la salle*)
 let change_door () =
   let d = !state.currentRoom.doors in
   let d_e = !state.doors_entity in
@@ -363,7 +374,7 @@ let get_door name =
   else (false,1)
 
 
-
+(* update l'interface*)
 let update_obj () =
   let x = 55. in
   let y = 17.5 in
@@ -373,7 +384,7 @@ let update_obj () =
     ) !interface.obj_entity;
   ()
   
-
+(*Ajoute un item aléatoirement*)
 let appenditem () =
     let itempool = !state.itempool in
     let obj_entity = !interface.obj_entity in
@@ -389,7 +400,7 @@ let appenditem () =
     ()
 
 
-        
+ (* Change de salle*)       
 let change_room e =
   let name = Name.get e in
   let r = snd (get_door name) in
@@ -437,7 +448,7 @@ let loot _player obj =
 
   
 
-  
+(* Change d'étage*)
 let change_floor map = 
   let floor = (get_state ()).floor in
   let player = fst (List.find (fun kv -> (String.compare (snd kv) "player")==0 ) (Name.members ())) in

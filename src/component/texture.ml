@@ -94,9 +94,4 @@ let get_frame anim _dir _dt _time _cpt=
         let _current = anim.current in
         let time = Sys.time () in
         anim.current <- (((int_of_float (time*.10.)))mod(fin-deb)) + deb;
-        (*Gfx.debug (Format.asprintf "anime %d" anim.current);*)
-        (*if !cpt > 5.0 then begin
-                if current == fin-1 then anim.current <- deb 
-                else begin anim.current <- anim.current + 1 end;
-        end;*)
         currentCase

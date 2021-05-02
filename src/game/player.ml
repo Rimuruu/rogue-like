@@ -87,6 +87,7 @@ let move_left e =
     Orientation.set e {x = -1.; y = 0.}
   end
 
+(*Si le joueur n'appuie plus sur une touche mais continue d'appuyer sur une autre on le vérifie pour pas faire de mouvement saccadé*)
 let stop key e =
   let anim = Surface.get e in
   let stats = Statistics.get e in

@@ -23,8 +23,11 @@ let move_to e1 e2 =
   let stats = Statistics.get e1 in
   let speed = stats.movespeed in
   let _max distX distY = if (absF distX) > (absF distY) then {x = (notNul distX) ; y = 0.} else  {x = 0. ; y = (notNul distY)} in
- (* Gfx.debug (Format.asprintf "diffx %f"  ((absF distX) -. (absF distY)));
-  Gfx.debug (Format.asprintf "diffy %f"  ((absF distY) -. (absF distX)));*)
+
+  (*Notre ennemie se déplace vers le joueur en prenant le x ou y le plus grand en premier.
+    On a une marge de 20 pixels pour pas avoir un movement saccadé en diagonale.
+   *)
+
   if (((absF distX) -. (absF distY)) > 20.)  then 
       Velocity.set e1 (Vector.mult speed {x = (notNul distX) ; y = 0.})
   else if (((absF distY) -. (absF distX)) > 20.) then  Velocity.set e1 (Vector.mult speed {x = 0.0 ; y = (notNul distY)});
